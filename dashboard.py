@@ -1,4 +1,7 @@
-total_return: Optional[float] = None
+from typing import Optional
+
+class PerformanceMetrics:
+    total_return: Optional[float] = None
     trading_days: Optional[int] = None
 
 class HyperliquidAPI:
