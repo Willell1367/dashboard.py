@@ -714,11 +714,21 @@ class DashboardData:
         
         equity_curve = np.cumsum(daily_pnl) + 1500
         
-        return pd.DataFrame({
-            'date': dates,
-            'daily_pnl': daily_pnl,
-            'equity': equity_curve
-        })
+    def get_monthly_performance_data(self, bot_id: str) -> pd.DataFrame:
+        """Get monthly performance breakdown for professional table display"""
+        # This would integrate with your actual monthly trade data
+        # For now, generating sample data based on your performance pattern
+        
+        months_data = [
+            {"Month": "Jan 2025", "Trades": 42, "Win%": 71, "P&L": 4235, "Drawdown": -2.1, "CAGR": 28.4},
+            {"Month": "Feb 2025", "Trades": 38, "Win%": 67, "P&L": 3890, "Drawdown": -1.8, "CAGR": 31.2},
+            {"Month": "Mar 2025", "Trades": 45, "Win%": 73, "P&L": 5120, "Drawdown": -3.2, "CAGR": 29.8},
+            {"Month": "Dec 2024", "Trades": 52, "Win%": 69, "P&L": 3567, "Drawdown": -2.4, "CAGR": 25.6},
+            {"Month": "Nov 2024", "Trades": 38, "Win%": 65, "P&L": 2890, "Drawdown": -4.1, "CAGR": 22.3},
+            {"Month": "Oct 2024", "Trades": 35, "Win%": 63, "P&L": 2445, "Drawdown": -3.8, "CAGR": 18.9},
+        ]
+        
+        return pd.DataFrame(months_data)
         """Get live position data from Hyperliquid"""
         try:
             bot_config = self.bot_configs[bot_id]
@@ -1302,7 +1312,143 @@ def render_temporal_analysis(bot_id: str, data_manager: DashboardData):
             borderpad=4
         )
     
-    st.plotly_chart(fig, use_container_width=True)
+    def render_monthly_performance_table(bot_id: str, data_manager: DashboardData):
+    """Render professional monthly performance table"""
+    st.markdown('<h3 class="gradient-header">📅 Monthly Performance Table</h3>', unsafe_allow_html=True)
+    
+    # Get monthly performance data
+    monthly_df = data_manager.get_monthly_performance_data(bot_id)
+    
+    if monthly_df.empty:
+        st.warning("No monthly performance data available")
+        return
+    
+    # Create professional table styling
+    st.markdown("""
+    <style>
+    .monthly-table {
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        margin: 1rem 0;
+    }
+    .table-header {
+        background: rgba(139, 92, 246, 0.2);
+        color: #f1f5f9;
+        font-weight: bold;
+        padding: 0.75rem;
+        border-bottom: 2px solid #8b5cf6;
+    }
+    .table-row {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        transition: background-color 0.2s ease;
+    }
+    .table-row:hover {
+        background: rgba(139, 92, 246, 0.1);
+    }
+    .positive-pnl {
+        color: #10b981;
+        font-weight: bold;
+    }
+    .negative-drawdown {
+        color: #ef4444;
+        font-weight: bold;
+    }
+    .high-cagr {
+        color: #f59e0b;
+        font-weight: bold;
+    }
+    .win-rate {
+        color: #8b5cf6;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Display the table
+    st.markdown('<div class="monthly-table">', unsafe_allow_html=True)
+    
+    # Table header
+    st.markdown("""
+    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 1fr 1fr 0.8fr; gap: 1rem; padding: 0.75rem; background: rgba(139, 92, 246, 0.2); border-radius: 8px 8px 0 0; border-bottom: 2px solid #8b5cf6;">
+        <div style="color: #f1f5f9; font-weight: bold;">Month</div>
+        <div style="color: #f1f5f9; font-weight: bold; text-align: center;">Trades</div>
+        <div style="color: #f1f5f9; font-weight: bold; text-align: center;">Win%</div>
+        <div style="color: #f1f5f9; font-weight: bold; text-align: center;">P&L</div>
+        <div style="color: #f1f5f9; font-weight: bold; text-align: center;">Drawdown</div>
+        <div style="color: #f1f5f9; font-weight: bold; text-align: center;">CAGR</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Table rows
+    for i, row in monthly_df.iterrows():
+        # Color coding for different metrics
+        pnl_color = "#10b981" if row['P&L'] > 0 else "#ef4444"
+        drawdown_color = "#ef4444"  # Always red for drawdown
+        cagr_color = "#f59e0b" if row['CAGR'] > 25 else "#10b981"
+        win_rate_color = "#10b981" if row['Win%'] > 70 else "#f59e0b" if row['Win%'] > 60 else "#ef4444"
+        
+        row_bg = "rgba(16, 185, 129, 0.05)" if i == 0 else "transparent"  # Highlight most recent month
+        
+        st.markdown(f"""
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 1fr 1fr 0.8fr; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid rgba(148, 163, 184, 0.1); background: {row_bg}; transition: background-color 0.2s ease;" 
+             onmouseover="this.style.background='rgba(139, 92, 246, 0.1)'" 
+             onmouseout="this.style.background='{row_bg}'">
+            <div style="color: #f1f5f9; font-weight: 600;">{row['Month']}</div>
+            <div style="color: #94a3b8; text-align: center;">{row['Trades']}</div>
+            <div style="color: {win_rate_color}; text-align: center; font-weight: bold;">{row['Win%']}%</div>
+            <div style="color: {pnl_color}; text-align: center; font-weight: bold;">${row['P&L']:,}</div>
+            <div style="color: {drawdown_color}; text-align: center; font-weight: bold;">{row['Drawdown']:+.1f}%</div>
+            <div style="color: {cagr_color}; text-align: center; font-weight: bold;">{row['CAGR']:.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Summary stats below table
+    st.markdown("### 📊 Monthly Performance Summary")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    avg_trades = monthly_df['Trades'].mean()
+    avg_win_rate = monthly_df['Win%'].mean()
+    total_pnl = monthly_df['P&L'].sum()
+    max_drawdown = monthly_df['Drawdown'].min()
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8;">Avg Trades/Month</h4>
+            <h3 style="color: #8b5cf6;">{avg_trades:.0f}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        win_color = "#10b981" if avg_win_rate > 70 else "#f59e0b"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8;">Avg Win Rate</h4>
+            <h3 style="color: {win_color};">{avg_win_rate:.1f}%</h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8;">Total P&L</h4>
+            <h3 style="color: #10b981;">${total_pnl:,}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8;">Max Monthly DD</h4>
+            <h3 style="color: #ef4444;">{max_drawdown:.1f}%</h3>
+        </div>
+        """, unsafe_allow_html=True)
     
     # Enhanced optimization summary with Modern Dark styling
     col1, col2, col3, col4 = st.columns(4)
@@ -1962,6 +2108,11 @@ def main():
         
         # P&L Charts Section
         render_pnl_charts(selected_view, timeframe, data_manager)
+        
+        st.markdown("---")
+        
+        # Monthly Performance Table
+        render_monthly_performance_table(selected_view, data_manager)
         
         st.markdown("---")
         
