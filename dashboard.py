@@ -47,6 +47,17 @@ st.markdown("""
         color: #f1f5f9;
     }
     
+    /* Sidebar - BLACK BACKGROUND */
+    .css-1d391kg {
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%) !important;
+        border-right: 3px solid rgba(168, 85, 247, 0.3) !important;
+    }
+    
+    /* Force sidebar background to be black */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+    }
+    
     /* Force ALL sidebar elements to bright colors - ENHANCED POP */
     .css-1d391kg, .css-1d391kg * {
         color: #ffffff !important;
@@ -223,39 +234,39 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Main content text - TURQUOISE STYLING */
+    /* Main content text - AQUA STYLING */
     .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
-        color: #40e0d0 !important;
+        color: #00ffff !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
     
-    /* Metric container headers - TURQUOISE */
+    /* Metric container headers - AQUA */
     .metric-container h4 {
-        color: #40e0d0 !important;
+        color: #00ffff !important;
         font-weight: 600 !important;
     }
     
-    /* Performance values - BRIGHT TURQUOISE */
+    /* Performance values - BRIGHT AQUA */
     .metric-container h1, .metric-container h2, .metric-container h3 {
         color: #00ffff !important;
-        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.3) !important;
+        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.4) !important;
     }
     
-    /* Section headers - VIBRANT TURQUOISE GRADIENT */
+    /* Section headers - VIBRANT AQUA GRADIENT */
     .gradient-header {
-        background: linear-gradient(90deg, #40e0d0 0%, #00ffff 50%, #20b2aa 100%) !important;
+        background: linear-gradient(90deg, #00ffff 0%, #40e0d0 50%, #00ffff 100%) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
         font-weight: bold !important;
     }
     
-    /* Secondary text - SOFTER TURQUOISE */
+    /* Secondary text - SOFTER AQUA */
     .text-secondary {
-        color: #20b2aa !important;
+        color: #40e0d0 !important;
     }
     
-    /* Status indicators - BRIGHT TURQUOISE */
+    /* Status indicators - BRIGHT AQUA */
     .status-live {
         color: #00ffff !important;
         font-weight: bold !important;
@@ -263,9 +274,9 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(0, 255, 255, 0.6) !important;
     }
     
-    /* Live data indicator - ANIMATED TURQUOISE */
+    /* Live data indicator - ANIMATED AQUA */
     .live-data-active {
-        color: #40e0d0 !important;
+        color: #00ffff !important;
         font-weight: bold !important;
         animation: pulse 2s infinite !important;
     }
@@ -491,10 +502,14 @@ class DashboardData:
                     years = trading_days / 365.25
                     cagr = ((account_value / start_balance) ** (1 / years) - 1) * 100
                 elif trading_days > 0 and start_balance > 0:
-                    # For short periods, calculate actual CAGR
+                    # FIXED: For short periods, calculate actual CAGR properly
                     total_return_factor = account_value / start_balance
-                    daily_return_factor = total_return_factor ** (1 / trading_days)
-                    cagr = ((daily_return_factor ** 365.25) - 1) * 100
+                    if total_return_factor > 0 and trading_days > 0:
+                        daily_return_factor = total_return_factor ** (1 / trading_days)
+                        annual_factor = daily_return_factor ** 365.25
+                        cagr = (annual_factor - 1) * 100
+                    else:
+                        cagr = 0
                 else:
                     cagr = 0
                 
