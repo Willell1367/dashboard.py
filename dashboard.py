@@ -34,7 +34,10 @@ HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true
 
 # Vault starting balances for profit calculation
 ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
-PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
+PERSONAL_WALLET_START_BALANCE = 175.0  # Adjust to your actual starting deposit
+
+# ETH Vault start date for accurate day calculation
+ETH_VAULT_START_DATE = "2025-07-13"  # First trade date
 
 # Custom CSS for Modern Dark theme
 st.markdown("""
@@ -44,13 +47,25 @@ st.markdown("""
         color: #f1f5f9;
     }
     
+    /* Force ALL sidebar elements to bright white - ENHANCED */
+    .css-1d391kg, .css-1d391kg * {
+        color: #ffffff !important;
+    }
+    
+    /* Specific sidebar selectors */
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Sidebar container */
     .css-1d391kg {
         background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
     }
     
     /* Fix sidebar text visibility */
     .sidebar .sidebar-content {
-        color: #f1f5f9 !important;
+        color: #ffffff !important;
     }
     
     /* Sidebar text elements - ENHANCED VISIBILITY */
@@ -68,11 +83,6 @@ st.markdown("""
         color: #ffffff !important;
         font-weight: 600 !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
-    }
-    
-    /* Force all sidebar text to be bright white */
-    .css-1d391kg * {
-        color: #ffffff !important;
     }
     
     /* Sidebar success/error messages */
@@ -179,7 +189,8 @@ st.markdown("""
     }
     
     .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
-        color: #f1f5f9 !important;
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
     
     .text-secondary {
@@ -392,13 +403,23 @@ class DashboardData:
                 # Calculate returns
                 total_return = (total_pnl / start_balance) * 100 if start_balance > 0 else 0
                 
-                # Estimate trading days (you can adjust this)
-                trading_days = 90  # Adjust based on when you started
+                # Calculate actual trading days from start date
+                if bot_id == "ETH_VAULT":
+                    start_date = datetime.strptime(ETH_VAULT_START_DATE, "%Y-%m-%d")
+                    trading_days = (datetime.now() - start_date).days
+                else:
+                    trading_days = 75  # Adjust for PURR bot
+                
                 avg_daily_return = total_return / trading_days if trading_days > 0 else 0
                 
-                # Calculate CAGR
-                if trading_days > 0 and start_balance > 0:
-                    cagr = ((account_value / start_balance) ** (365 / trading_days) - 1) * 100
+                # Calculate CAGR properly - but only if reasonable time period
+                if trading_days >= 30 and start_balance > 0 and account_value > start_balance:
+                    years = trading_days / 365.25
+                    cagr = ((account_value / start_balance) ** (1 / years) - 1) * 100
+                elif trading_days > 0:
+                    # For short periods, show projected CAGR with warning
+                    daily_return = (account_value / start_balance) ** (1 / trading_days) - 1
+                    cagr = (((1 + daily_return) ** 365.25) - 1) * 100
                 else:
                     cagr = 0
                 
@@ -426,19 +447,23 @@ class DashboardData:
     def _get_sample_performance(self, bot_id: str) -> PerformanceMetrics:
         """Fallback sample data"""
         if bot_id == "ETH_VAULT":
+            # Calculate actual trading days
+            start_date = datetime.strptime(ETH_VAULT_START_DATE, "%Y-%m-%d")
+            actual_trading_days = (datetime.now() - start_date).days
+            
             return PerformanceMetrics(
-                total_pnl=99.62,  # Your actual profit
-                today_pnl=8.75,   # Current unrealized  
-                account_value=3088.54,  # Current balance
-                win_rate=68.5,
+                total_pnl=139.85,  # Your actual profit from screenshot
+                today_pnl=0.0,   # Currently flat
+                account_value=3139.85,  # Current balance from screenshot
+                win_rate=70.0,  # Estimated
                 profit_factor=1.42,
                 sharpe_ratio=1.18,
                 sortino_ratio=2.39,
                 max_drawdown=-3.2,
-                cagr=12.5,
-                avg_daily_return=0.14,
-                total_return=3.3,
-                trading_days=90
+                cagr=((3139.85/3000.0)**(365.25/actual_trading_days)-1)*100 if actual_trading_days >= 30 else ((3139.85/3000.0)**(1/actual_trading_days)-1)*365.25*100,
+                avg_daily_return=(139.85/3000.0*100)/actual_trading_days if actual_trading_days > 0 else 0,
+                total_return=(139.85/3000.0)*100,
+                trading_days=actual_trading_days
             )
         else:  # PURR_PERSONAL
             return PerformanceMetrics(
@@ -623,8 +648,8 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(139, 92, 246, 0.2);">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9em;">
                 <div>
-                    <span style="color: #94a3b8;">🚀 Railway:</span>
-                    <code style="color: #8b5cf6; margin-left: 0.5rem;">{bot_config.railway_url}</code>
+                    <span style="color: #94a3b8;">🚀 Bot Status:</span>
+                    <span style="color: #10b981; margin-left: 0.5rem; font-weight: bold;">LIVE ✅</span>
                 </div>
                 <div>
                     <span style="color: #94a3b8;">📈 Strategy:</span>
@@ -635,7 +660,7 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         
         {f'''<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(139, 92, 246, 0.2);">
             <span style="color: #94a3b8;">🏦 Vault Address:</span>
-            <div class="vault-address" style="margin-top: 0.5rem;">{bot_config.vault_address}</div>
+            <div style="font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace; background: rgba(30, 41, 59, 0.6); color: #8b5cf6; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3); font-size: 0.9em; letter-spacing: 0.5px; margin-top: 0.5rem;">{bot_config.vault_address}</div>
         </div>''' if bot_config.vault_address else ''}
     </div>
     """, unsafe_allow_html=True)
@@ -903,12 +928,12 @@ def main():
             """, unsafe_allow_html=True)
         
         with col3:
-            days_trading = performance.trading_days if performance.trading_days else 90
+            days_trading = performance.trading_days if performance.trading_days else 14  # Use actual calculated days
             st.markdown(f"""
             <div class="metric-container">
                 <h4 style="color: #94a3b8;">Trading Days</h4>
                 <h3 style="color: #f59e0b;">{days_trading}</h3>
-                <p style="color: #94a3b8; font-size: 0.9em;">Active period</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
             </div>
             """, unsafe_allow_html=True)
         
