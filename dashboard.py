@@ -223,13 +223,51 @@ st.markdown("""
         font-weight: bold;
     }
     
+    /* Main content text - TURQUOISE STYLING */
     .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
-        color: #ffffff !important;
+        color: #40e0d0 !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
     
+    /* Metric container headers - TURQUOISE */
+    .metric-container h4 {
+        color: #40e0d0 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Performance values - BRIGHT TURQUOISE */
+    .metric-container h1, .metric-container h2, .metric-container h3 {
+        color: #00ffff !important;
+        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.3) !important;
+    }
+    
+    /* Section headers - VIBRANT TURQUOISE GRADIENT */
+    .gradient-header {
+        background: linear-gradient(90deg, #40e0d0 0%, #00ffff 50%, #20b2aa 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        font-weight: bold !important;
+    }
+    
+    /* Secondary text - SOFTER TURQUOISE */
     .text-secondary {
-        color: #94a3b8 !important;
+        color: #20b2aa !important;
+    }
+    
+    /* Status indicators - BRIGHT TURQUOISE */
+    .status-live {
+        color: #00ffff !important;
+        font-weight: bold !important;
+        font-size: 1.1em !important;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.6) !important;
+    }
+    
+    /* Live data indicator - ANIMATED TURQUOISE */
+    .live-data-active {
+        color: #40e0d0 !important;
+        font-weight: bold !important;
+        animation: pulse 2s infinite !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -452,10 +490,11 @@ class DashboardData:
                 if trading_days >= 30 and start_balance > 0 and account_value > start_balance:
                     years = trading_days / 365.25
                     cagr = ((account_value / start_balance) ** (1 / years) - 1) * 100
-                elif trading_days > 0:
-                    # For short periods, show projected CAGR with warning
-                    daily_return = (account_value / start_balance) ** (1 / trading_days) - 1
-                    cagr = (((1 + daily_return) ** 365.25) - 1) * 100
+                elif trading_days > 0 and start_balance > 0:
+                    # For short periods, calculate actual CAGR
+                    total_return_factor = account_value / start_balance
+                    daily_return_factor = total_return_factor ** (1 / trading_days)
+                    cagr = ((daily_return_factor ** 365.25) - 1) * 100
                 else:
                     cagr = 0
                 
@@ -489,8 +528,9 @@ class DashboardData:
             actual_trading_days = (end_date - start_date).days  # Exactly 14 days
             
             # Calculate CAGR: 4.66% return in 14 days
-            daily_return_factor = (3139.85 / 3000.0) ** (1 / actual_trading_days)
-            annualized_cagr = ((daily_return_factor ** 365.25) - 1) * 100
+            total_return_factor = 3139.85 / 3000.0  # 1.04662
+            daily_return_factor = total_return_factor ** (1 / actual_trading_days)  # Daily compound rate
+            annualized_cagr = ((daily_return_factor ** 365.25) - 1) * 100  # Compound for full year
             
             return PerformanceMetrics(
                 total_pnl=139.85,  # Your actual profit from screenshot
