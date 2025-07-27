@@ -34,7 +34,7 @@ HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true
 
 # Vault starting balances for profit calculation
 ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
-PERSONAL_WALLET_START_BALANCE = 175.0  # Adjust to your actual starting deposit
+PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
 
 # Custom CSS for Modern Dark theme
 st.markdown("""
@@ -53,7 +53,7 @@ st.markdown("""
         color: #f1f5f9 !important;
     }
     
-    /* Sidebar text elements */
+    /* Sidebar text elements - ENHANCED VISIBILITY */
     .css-1d391kg .stMarkdown,
     .css-1d391kg .stText,
     .css-1d391kg p,
@@ -65,8 +65,14 @@ st.markdown("""
     .css-1d391kg h6,
     .css-1d391kg .stSelectbox label,
     .css-1d391kg .stCheckbox label {
-        color: #f1f5f9 !important;
-        font-weight: 500 !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    }
+    
+    /* Force all sidebar text to be bright white */
+    .css-1d391kg * {
+        color: #ffffff !important;
     }
     
     /* Sidebar success/error messages */
