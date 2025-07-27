@@ -36,6 +36,152 @@ HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true
 ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
 PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
 
+# Custom CSS for Modern Dark theme
+st.markdown("""
+<style>
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #f1f5f9;
+    }
+    
+    .css-1d391kg {
+        background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+    }
+    
+    /* Fix sidebar text visibility */
+    .sidebar .sidebar-content {
+        color: #f1f5f9 !important;
+    }
+    
+    /* Sidebar text elements */
+    .css-1d391kg .stMarkdown,
+    .css-1d391kg .stText,
+    .css-1d391kg p,
+    .css-1d391kg h1,
+    .css-1d391kg h2,
+    .css-1d391kg h3,
+    .css-1d391kg h4,
+    .css-1d391kg h5,
+    .css-1d391kg h6,
+    .css-1d391kg .stSelectbox label,
+    .css-1d391kg .stCheckbox label {
+        color: #f1f5f9 !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Sidebar success/error messages */
+    .css-1d391kg .stSuccess,
+    .css-1d391kg .stError,
+    .css-1d391kg .stWarning,
+    .css-1d391kg .stInfo {
+        color: #f1f5f9 !important;
+    }
+    
+    /* Sidebar buttons */
+    .css-1d391kg .stButton > button {
+        color: #f1f5f9 !important;
+        font-weight: 600 !important;
+    }
+    
+    .metric-container {
+        background: rgba(30, 41, 59, 0.8);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        backdrop-filter: blur(8px);
+        margin: 0.5rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-container:hover {
+        border-color: rgba(139, 92, 246, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.6), 0 15px 15px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-live {
+        color: #10b981;
+        font-weight: bold;
+        font-size: 1.1em;
+        text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    
+    .status-offline {
+        color: #ef4444;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    
+    .performance-positive {
+        color: #10b981;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    }
+    
+    .performance-negative {
+        color: #ef4444;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .vault-address {
+        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+        background: rgba(30, 41, 59, 0.6);
+        color: #8b5cf6;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        font-size: 0.9em;
+        letter-spacing: 0.5px;
+    }
+    
+    .connection-success {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .connection-error {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .live-data-active {
+        color: #10b981;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .gradient-header {
+        background: linear-gradient(90deg, #f1f5f9 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: bold;
+    }
+    
+    .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
+        color: #f1f5f9 !important;
+    }
+    
+    .text-secondary {
+        color: #94a3b8 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 @dataclass
 class BotConfig:
     """Configuration for trading bots"""
@@ -55,6 +201,62 @@ class BotConfig:
 class PerformanceMetrics:
     """Performance metrics structure"""
     total_pnl: float
+    today_pnl: float
+    account_value: float
+    win_rate: float
+    profit_factor: float
+    sharpe_ratio: float
+    sortino_ratio: float
+    max_drawdown: float
+    cagr: Optional[float] = None
+    avg_daily_return: Optional[float] = None
+    total_return: Optional[float] = None
+    trading_days: Optional[int] = None
+
+class HyperliquidAPI:
+    """Integration with Hyperliquid production setup - FIXED VERSION"""
+    
+    def __init__(self):
+        self.is_testnet = HYPERLIQUID_TESTNET
+        self.base_url = constants.TESTNET_API_URL if self.is_testnet else constants.MAINNET_API_URL
+        self.info = Info(self.base_url, skip_ws=True)
+        self.connection_status = self._test_connection()
+    
+    def _test_connection(self) -> bool:
+        """Test API connection"""
+        try:
+            meta = self.info.meta()
+            return meta is not None
+        except Exception as e:
+            print(f"Hyperliquid API connection failed: {e}")
+            return False
+    
+    def get_user_state(self, address: str) -> Dict:
+        """Get current positions and balances"""
+        try:
+            if not address or len(address) != 42:
+                return {}
+            return self.info.user_state(address)
+        except Exception as e:
+            print(f"User state API error for {address[:10]}...: {e}")
+            return {}
+    
+    def get_account_balance(self, address: str) -> float:
+        """Get account balance"""
+        try:
+            user_state = self.get_user_state(address)
+            if 'marginSummary' in user_state and 'accountValue' in user_state['marginSummary']:
+                return float(user_state['marginSummary']['accountValue'])
+            return 0.0
+        except Exception as e:
+            print(f"Balance API error: {e}")
+            return 0.0
+    
+    def get_current_position(self, address: str, asset: str) -> Dict:
+        """Get current position for asset"""
+        try:
+            user_state = self.get_user_state(address)
+            positions = user_state.get('assetPositions', [])
             
             for position in positions:
                 if position['position']['coin'] == asset:
@@ -440,47 +642,6 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         pnl_color = "performance-positive" if performance.today_pnl >= 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Today's return rate</h4>
-            <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
-                {today_return_pct:+.3f}%
-            </h1>
-            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance.today_pnl:,.2f} P&L</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        total_color = "performance-positive" if performance.total_pnl >= 0 else "performance-negative"
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
-            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance.total_pnl:,.2f}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
-            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance.account_value:,.2f}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
-            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col5:
-        unrealized_color = "performance-positive" if position_data['unrealized_pnl'] >= 0 else "performance-negative"
-        st.markdown(f"""
-        <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Unrealized P&L</h4>
             <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${position_data['unrealized_pnl']:,.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Live Position</p>
@@ -733,215 +894,45 @@ def main():
         st.markdown("**📊 Data:** Live Hyperliquid API")
 
 if __name__ == "__main__":
-    main()# Hyperliquid Trading Dashboard - Production Integration
-# File: dashboard.py
-
-import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
-from datetime import datetime, timedelta
-import requests
-import time
-import json
-import asyncio
-from dataclasses import dataclass
-from typing import Dict, List, Optional
-import numpy as np
-import os
-from hyperliquid.info import Info
-from hyperliquid.utils import constants
-
-# Page configuration
-st.set_page_config(
-    page_title="Hyperliquid Trading Dashboard",
-    page_icon="🚀",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Environment variables for production
-ETH_VAULT_ADDRESS = os.getenv('ETH_VAULT_ADDRESS', '0x578dc64b2fa58fcc4d188dfff606766c78b46c65')
-PERSONAL_WALLET_ADDRESS = os.getenv('PERSONAL_WALLET_ADDRESS', '')
-ETH_RAILWAY_URL = os.getenv('ETH_RAILWAY_URL', 'web-production-a1b2f.up.railway.app')
-PURR_RAILWAY_URL = os.getenv('PURR_RAILWAY_URL', 'web-production-6334f.up.railway.app')
-HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true'
-
-# Vault starting balances for profit calculation
-ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
-PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
-
-# Custom CSS for Modern Dark theme
-st.markdown("""
-<style>
-    .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: #f1f5f9;
-    }
+    main() style="color: #94a3b8; margin-bottom: 1rem;">Today's return rate</h4>
+            <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
+                {today_return_pct:+.3f}%
+            </h1>
+            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance.today_pnl:,.2f} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    .css-1d391kg {
-        background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
-    }
+    with col2:
+        total_color = "performance-positive" if performance.total_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance.total_pnl:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    /* Fix sidebar text visibility */
-    .sidebar .sidebar-content {
-        color: #f1f5f9 !important;
-    }
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance.account_value:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    /* Sidebar text elements */
-    .css-1d391kg .stMarkdown,
-    .css-1d391kg .stText,
-    .css-1d391kg p,
-    .css-1d391kg h1,
-    .css-1d391kg h2,
-    .css-1d391kg h3,
-    .css-1d391kg h4,
-    .css-1d391kg h5,
-    .css-1d391kg h6,
-    .css-1d391kg .stSelectbox label,
-    .css-1d391kg .stCheckbox label {
-        color: #f1f5f9 !important;
-        font-weight: 500 !important;
-    }
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    /* Sidebar success/error messages */
-    .css-1d391kg .stSuccess,
-    .css-1d391kg .stError,
-    .css-1d391kg .stWarning,
-    .css-1d391kg .stInfo {
-        color: #f1f5f9 !important;
-    }
-    
-    /* Sidebar buttons */
-    .css-1d391kg .stButton > button {
-        color: #f1f5f9 !important;
-        font-weight: 600 !important;
-    }
-    
-    .metric-container {
-        background: rgba(30, 41, 59, 0.8);
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        backdrop-filter: blur(8px);
-        margin: 0.5rem 0;
-        transition: all 0.3s ease;
-    }
-    
-    .metric-container:hover {
-        border-color: rgba(139, 92, 246, 0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 25px 35px -5px rgba(0, 0, 0, 0.6), 0 15px 15px -5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .status-live {
-        color: #10b981;
-        font-weight: bold;
-        font-size: 1.1em;
-        text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-    }
-    
-    .status-offline {
-        color: #ef4444;
-        font-weight: bold;
-        font-size: 1.1em;
-    }
-    
-    .performance-positive {
-        color: #10b981;
-        font-weight: bold;
-        text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
-    }
-    
-    .performance-negative {
-        color: #ef4444;
-        font-weight: bold;
-        text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
-    }
-    
-    .vault-address {
-        font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
-        background: rgba(30, 41, 59, 0.6);
-        color: #8b5cf6;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        border: 1px solid rgba(139, 92, 246, 0.3);
-        font-size: 0.9em;
-        letter-spacing: 0.5px;
-    }
-    
-    .connection-success {
-        color: #10b981;
-        background: rgba(16, 185, 129, 0.1);
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    
-    .connection-error {
-        color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    
-    .live-data-active {
-        color: #10b981;
-        font-weight: bold;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
-    }
-    
-    .gradient-header {
-        background: linear-gradient(90deg, #f1f5f9 0%, #8b5cf6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: bold;
-    }
-    
-    .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
-        color: #f1f5f9 !important;
-    }
-    
-    .text-secondary {
-        color: #94a3b8 !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-@dataclass
-class BotConfig:
-    """Configuration for trading bots"""
-    name: str
-    status: str
-    allocation: float
-    mode: str
-    railway_url: str
-    asset: str
-    timeframe: str
-    strategy: str
-    vault_address: Optional[str] = None
-    personal_address: Optional[str] = None
-    api_endpoint: Optional[str] = None
-
-@dataclass 
-class PerformanceMetrics:
-    """Performance metrics structure"""
-    total_pnl: float
-    today_pnl: float
-    account_value: float
-    win_rate: float
-    profit_factor: float
-    sharpe_ratio: float
-    sortino_ratio: float
-    max_drawdown: float
-    cagr: Optional[float] = None
-    avg_daily_return: Optional[float] = None
+    with col5:
+        unrealized_color = "performance-positive" if position_data['unrealized_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4
