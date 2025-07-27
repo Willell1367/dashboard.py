@@ -1,53 +1,60 @@
-from typing import Optional
+# Hyperliquid Trading Dashboard - Production Integration
+# File: dashboard.py
 
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from datetime import datetime, timedelta
+import requests
+import time
+import json
+import asyncio
+from dataclasses import dataclass
+from typing import Dict, List, Optional
+import numpy as np
+import os
+from hyperliquid.info import Info
+from hyperliquid.utils import constants
+
+# Page configuration
+st.set_page_config(
+    page_title="Hyperliquid Trading Dashboard",
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Environment variables for production
+ETH_VAULT_ADDRESS = os.getenv('ETH_VAULT_ADDRESS', '0x578dc64b2fa58fcc4d188dfff606766c78b46c65')
+PERSONAL_WALLET_ADDRESS = os.getenv('PERSONAL_WALLET_ADDRESS', '')
+ETH_RAILWAY_URL = os.getenv('ETH_RAILWAY_URL', 'web-production-a1b2f.up.railway.app')
+PURR_RAILWAY_URL = os.getenv('PURR_RAILWAY_URL', 'web-production-6334f.up.railway.app')
+HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true'
+
+# Vault starting balances for profit calculation
+ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
+PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
+
+@dataclass
+class BotConfig:
+    """Configuration for trading bots"""
+    name: str
+    status: str
+    allocation: float
+    mode: str
+    railway_url: str
+    asset: str
+    timeframe: str
+    strategy: str
+    vault_address: Optional[str] = None
+    personal_address: Optional[str] = None
+    api_endpoint: Optional[str] = None
+
+@dataclass 
 class PerformanceMetrics:
-    total_return: Optional[float] = None
-    trading_days: Optional[int] = None
-
-class HyperliquidAPI:
-    """Integration with Hyperliquid production setup - FIXED VERSION"""
-    
-    def __init__(self):
-        self.is_testnet = HYPERLIQUID_TESTNET
-        self.base_url = constants.TESTNET_API_URL if self.is_testnet else constants.MAINNET_API_URL
-        self.info = Info(self.base_url, skip_ws=True)
-        self.connection_status = self._test_connection()
-    
-    def _test_connection(self) -> bool:
-        """Test API connection"""
-        try:
-            meta = self.info.meta()
-            return meta is not None
-        except Exception as e:
-            print(f"Hyperliquid API connection failed: {e}")
-            return False
-    
-    def get_user_state(self, address: str) -> Dict:
-        """Get current positions and balances"""
-        try:
-            if not address or len(address) != 42:
-                return {}
-            return self.info.user_state(address)
-        except Exception as e:
-            print(f"User state API error for {address[:10]}...: {e}")
-            return {}
-    
-    def get_account_balance(self, address: str) -> float:
-        """Get account balance"""
-        try:
-            user_state = self.get_user_state(address)
-            if 'marginSummary' in user_state and 'accountValue' in user_state['marginSummary']:
-                return float(user_state['marginSummary']['accountValue'])
-            return 0.0
-        except Exception as e:
-            print(f"Balance API error: {e}")
-            return 0.0
-    
-    def get_current_position(self, address: str, asset: str) -> Dict:
-        """Get current position for asset"""
-        try:
-            user_state = self.get_user_state(address)
-            positions = user_state.get('assetPositions', [])
+    """Performance metrics structure"""
+    total_pnl: float
             
             for position in positions:
                 if position['position']['coin'] == asset:
