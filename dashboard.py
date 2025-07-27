@@ -34,7 +34,7 @@ HYPERLIQUID_TESTNET = os.getenv('HYPERLIQUID_TESTNET', 'false').lower() == 'true
 
 # Vault starting balances for profit calculation
 ETH_VAULT_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
-PERSONAL_WALLET_START_BALANCE = 3000.0  # Adjust to your actual starting deposit
+PERSONAL_WALLET_START_BALANCE = 175.0  # Adjust to your actual starting deposit
 
 # Custom CSS for Modern Dark theme
 st.markdown("""
@@ -642,6 +642,47 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         pnl_color = "performance-positive" if performance.today_pnl >= 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Today's return rate</h4>
+            <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
+                {today_return_pct:+.3f}%
+            </h1>
+            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance.today_pnl:,.2f} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance.total_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance.total_pnl:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance.account_value:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_color = "performance-positive" if position_data['unrealized_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Unrealized P&L</h4>
             <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${position_data['unrealized_pnl']:,.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Live Position</p>
@@ -894,45 +935,4 @@ def main():
         st.markdown("**📊 Data:** Live Hyperliquid API")
 
 if __name__ == "__main__":
-    main() style="color: #94a3b8; margin-bottom: 1rem;">Today's return rate</h4>
-            <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
-                {today_return_pct:+.3f}%
-            </h1>
-            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance.today_pnl:,.2f} P&L</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        total_color = "performance-positive" if performance.total_pnl >= 0 else "performance-negative"
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
-            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance.total_pnl:,.2f}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
-            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance.account_value:,.2f}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
-            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col5:
-        unrealized_color = "performance-positive" if position_data['unrealized_pnl'] >= 0 else "performance-negative"
-        st.markdown(f"""
-        <div class="metric-container">
-            <h4
+    main()
