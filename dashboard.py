@@ -588,7 +588,7 @@ class DashboardData:
         # Fallback to sample data if API fails
         return _self._get_sample_performance(bot_id)
     
-    def _get_sample_performance(self, bot_id: str) -> PerformanceMetrics:
+    def _get_sample_performance(self, bot_id: str) -> Dict:  # FIXED: Return Dict instead of PerformanceMetrics
         """Fallback sample data"""
         if bot_id == "ETH_VAULT":
             # Calculate actual trading days: July 13 to July 27 = 14 days exactly
@@ -601,35 +601,35 @@ class DashboardData:
             daily_return_factor = total_return_factor ** (1 / actual_trading_days)  # Daily compound rate
             annualized_cagr = ((daily_return_factor ** 365.25) - 1) * 100  # Compound for full year
             
-            return PerformanceMetrics(
-                total_pnl=139.85,  # Your actual profit from screenshot
-                today_pnl=0.0,   # Currently flat
-                account_value=3139.85,  # Current balance from screenshot
-                win_rate=70.0,  # Estimated
-                profit_factor=1.42,
-                sharpe_ratio=1.18,
-                sortino_ratio=2.39,
-                max_drawdown=-3.2,
-                cagr=annualized_cagr,  # Should be ~1,230% for 14 days
-                avg_daily_return=(139.85/3000.0*100)/actual_trading_days,  # ~0.33% daily
-                total_return=(139.85/3000.0)*100,  # 4.66%
-                trading_days=actual_trading_days  # Exactly 14
-            )
+            return {
+                'total_pnl': 139.85,  # Your actual profit from screenshot
+                'today_pnl': 0.0,   # Currently flat
+                'account_value': 3139.85,  # Current balance from screenshot
+                'win_rate': 70.0,  # Estimated
+                'profit_factor': 1.42,
+                'sharpe_ratio': 1.18,
+                'sortino_ratio': 2.39,
+                'max_drawdown': -3.2,
+                'cagr': annualized_cagr,  # Should be ~1,230% for 14 days
+                'avg_daily_return': (139.85/3000.0*100)/actual_trading_days,  # ~0.33% daily
+                'total_return': (139.85/3000.0)*100,  # 4.66%
+                'trading_days': actual_trading_days  # Exactly 14
+            }
         else:  # PURR_PERSONAL - UNIQUE METRICS
-            return PerformanceMetrics(
-                total_pnl=50.0,  # Adjust to actual PURR performance
-                today_pnl=0.15,  # Your actual 15 cent profit today
-                account_value=225.0,  # Adjust to actual PURR account value ($175 + $50 profit)
-                win_rate=75.2,  # DIFFERENT from ETH bot
-                profit_factor=1.68,  # DIFFERENT - PURR has different risk profile
-                sharpe_ratio=1.45,  # DIFFERENT - Mean reversion typically higher Sharpe
-                sortino_ratio=2.12,  # DIFFERENT - Better downside protection
-                max_drawdown=-1.8,  # DIFFERENT - Smaller drawdowns with mean reversion
-                cagr=28.5,  # DIFFERENT - More conservative CAGR for PURR
-                avg_daily_return=0.28,  # DIFFERENT daily return
-                total_return=28.6,  # DIFFERENT total return
-                trading_days=75  # DIFFERENT trading period
-            )
+            return {
+                'total_pnl': 50.0,  # Adjust to actual PURR performance
+                'today_pnl': 0.15,  # Your actual 15 cent profit today
+                'account_value': 225.0,  # Adjust to actual PURR account value ($175 + $50 profit)
+                'win_rate': 75.2,  # DIFFERENT from ETH bot
+                'profit_factor': 1.68,  # DIFFERENT - PURR has different risk profile
+                'sharpe_ratio': 1.45,  # DIFFERENT - Mean reversion typically higher Sharpe
+                'sortino_ratio': 2.12,  # DIFFERENT - Better downside protection
+                'max_drawdown': -1.8,  # DIFFERENT - Smaller drawdowns with mean reversion
+                'cagr': 28.5,  # DIFFERENT - More conservative CAGR for PURR
+                'avg_daily_return': 0.28,  # DIFFERENT daily return
+                'total_return': 28.6,  # DIFFERENT total return
+                'trading_days': 75  # DIFFERENT trading period
+            }
     
     @st.cache_data(ttl=60)
     def get_live_position_data(_self, bot_id: str) -> Dict:
@@ -782,8 +782,8 @@ def render_sidebar():
     
     return selected_bot, timeframe
 
-def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, position_data: Dict):
-    """Enhanced bot header with live data - FIXED HTML ISSUE"""
+def render_bot_header(bot_config: BotConfig, performance: Dict, position_data: Dict):  # FIXED: performance is Dict, not dataclass
+    """Enhanced bot header with live data - FIXED DICTIONARY ACCESS"""
     
     # Main header section - NO PROBLEMATIC HTML
     st.markdown(f"""
@@ -816,28 +816,28 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         st.markdown("**🏦 Vault Address:**")
         st.code(bot_config.vault_address, language=None)
     
-    # Enhanced metrics grid
+    # Enhanced metrics grid - FIXED DICTIONARY ACCESS
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
-        today_return_pct = (performance.today_pnl / performance.account_value) * 100 if performance.account_value > 0 else 0
-        pnl_color = "performance-positive" if performance.today_pnl >= 0 else "performance-negative"
+        today_return_pct = (performance['today_pnl'] / performance['account_value']) * 100 if performance['account_value'] > 0 else 0
+        pnl_color = "performance-positive" if performance['today_pnl'] >= 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 1rem;">Today's return rate</h4>
             <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
                 {today_return_pct:+.3f}%
             </h1>
-            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance.today_pnl:,.2f} P&L</p>
+            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance['today_pnl']:,.2f} P&L</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        total_color = "performance-positive" if performance.total_pnl >= 0 else "performance-negative"
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
-            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance.total_pnl:,.2f}</h2>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
         </div>
         """, unsafe_allow_html=True)
@@ -846,7 +846,7 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
-            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance.account_value:,.2f}</h2>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
         </div>
         """, unsafe_allow_html=True)
@@ -873,42 +873,42 @@ def render_bot_header(bot_config: BotConfig, performance: PerformanceMetrics, po
         </div>
         """, unsafe_allow_html=True)
 
-def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
-    """Enhanced performance metrics display"""
+def render_performance_metrics(performance: Dict, bot_id: str):  # FIXED: performance is Dict
+    """Enhanced performance metrics display - FIXED DICTIONARY ACCESS"""
     st.markdown('<h3 class="gradient-header">📊 Performance Analytics</h3>', unsafe_allow_html=True)
     
     # Primary metrics row
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        cagr_color = "performance-positive" if performance.cagr and performance.cagr > 0 else "performance-negative"
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
             <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
-                {performance.cagr:.1f}%
+                {performance.get('cagr', 0):.1f}%
             </h1>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        daily_color = "performance-positive" if performance.avg_daily_return and performance.avg_daily_return > 0 else "performance-negative"
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
             <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
-                {performance.avg_daily_return:.3f}%
+                {performance.get('avg_daily_return', 0):.3f}%
             </h1>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
-        total_return_color = "performance-positive" if performance.total_return and performance.total_return > 0 else "performance-negative"
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
-            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.total_return:.1f}%</h2>
-            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.trading_days} days</p>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -916,7 +916,7 @@ def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate</h4>
-            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.win_rate:.1f}%</h2>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Success Rate</p>
         </div>
         """, unsafe_allow_html=True)
@@ -929,7 +929,7 @@ def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor</h4>
-            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.profit_factor:.2f}</h2>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Gross Profit/Loss</p>
         </div>
         """, unsafe_allow_html=True)
@@ -938,7 +938,7 @@ def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio</h4>
-            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.sharpe_ratio:.2f}</h2>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Risk-Adjusted</p>
         </div>
         """, unsafe_allow_html=True)
@@ -947,7 +947,7 @@ def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio</h4>
-            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.sortino_ratio:.2f}</h2>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Downside Risk</p>
         </div>
         """, unsafe_allow_html=True)
@@ -956,7 +956,7 @@ def render_performance_metrics(performance: PerformanceMetrics, bot_id: str):
         st.markdown(f"""
         <div class="metric-container">
             <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown</h4>
-            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.max_drawdown:.1f}%</h2>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
             <p style="color: #8b5cf6; font-size: 0.9em;">Peak to Trough</p>
         </div>
         """, unsafe_allow_html=True)
@@ -980,14 +980,14 @@ def main():
     if selected_view == "PORTFOLIO":
         st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
         
-        # Get performance for both bots
+        # Get performance for both bots - FIXED DICTIONARY ACCESS
         eth_perf = data_manager.get_live_performance("ETH_VAULT")
         purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
         
-        # Portfolio summary
-        total_pnl = eth_perf.total_pnl + purr_perf.total_pnl
-        total_today = eth_perf.today_pnl + purr_perf.today_pnl
-        total_account_value = eth_perf.account_value + purr_perf.account_value
+        # Portfolio summary - FIXED DICTIONARY ACCESS
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
         
         col1, col2, col3 = st.columns(3)
         
@@ -1017,7 +1017,7 @@ def main():
             </div>
             """, unsafe_allow_html=True)
         
-        # Individual bot status
+        # Individual bot status - FIXED DICTIONARY ACCESS
         st.markdown("### Bot Status")
         col1, col2 = st.columns(2)
         
@@ -1026,8 +1026,8 @@ def main():
             st.markdown(f"""
             <div class="metric-container">
                 <h4>{eth_config.name}</h4>
-                <p><span class="status-live">● {eth_config.status}</span> | ${eth_perf.total_pnl:,.2f} P&L</p>
-                <p style="color: #94a3b8; font-size: 0.9em;">Account: ${eth_perf.account_value:,.2f}</p>
+                <p><span class="status-live">● {eth_config.status}</span> | ${eth_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Account: ${eth_perf['account_value']:,.2f}</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -1036,8 +1036,8 @@ def main():
             st.markdown(f"""
             <div class="metric-container">
                 <h4>{purr_config.name}</h4>
-                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf.total_pnl:,.2f} P&L</p>
-                <p style="color: #94a3b8; font-size: 0.9em;">Account: ${purr_perf.account_value:,.2f}</p>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Account: ${purr_perf['account_value']:,.2f}</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -1057,7 +1057,7 @@ def main():
         
         st.markdown("---")
         
-        # Basic live data summary
+        # Basic live data summary - FIXED DICTIONARY ACCESS
         st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
         
         col1, col2, col3, col4 = st.columns(4)
@@ -1081,7 +1081,7 @@ def main():
             """, unsafe_allow_html=True)
         
         with col3:
-            days_trading = performance.trading_days if performance.trading_days else 14  # Use actual calculated days
+            days_trading = performance.get('trading_days', 14)  # FIXED DICTIONARY ACCESS
             st.markdown(f"""
             <div class="metric-container">
                 <h4 style="color: #94a3b8;">Trading Days</h4>
