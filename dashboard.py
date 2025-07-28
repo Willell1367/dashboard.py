@@ -234,36 +234,38 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* Main content text - AQUA STYLING */
+    /* Main content text - BRIGHT AQUA FOR ALL TEXT */
     .stMarkdown, .stText, p, h1, h2, h3, h4, h5, h6 {
         color: #00ffff !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    }
-    
-    /* Metric container headers - AQUA */
-    .metric-container h4 {
-        color: #00ffff !important;
+        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.4) !important;
         font-weight: 600 !important;
     }
     
-    /* Performance values - BRIGHT AQUA */
+    /* ALL metric container text - BRIGHT AQUA */
+    .metric-container h4, .metric-container h1, .metric-container h2, .metric-container h3, .metric-container p {
+        color: #00ffff !important;
+        font-weight: 700 !important;
+        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.5) !important;
+    }
+    
+    /* Section headers - ULTRA BRIGHT AQUA */
+    .gradient-header, h1, h2, h3 {
+        color: #00ffff !important;
+        font-weight: 800 !important;
+        text-shadow: 0 3px 6px rgba(0, 255, 255, 0.6) !important;
+    }
+    
+    /* Performance values - GLOWING AQUA */
     .metric-container h1, .metric-container h2, .metric-container h3 {
         color: #00ffff !important;
-        text-shadow: 0 2px 4px rgba(0, 255, 255, 0.4) !important;
+        text-shadow: 0 4px 8px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.3) !important;
+        font-weight: 800 !important;
     }
     
-    /* Section headers - VIBRANT AQUA GRADIENT */
-    .gradient-header {
-        background: linear-gradient(90deg, #00ffff 0%, #40e0d0 50%, #00ffff 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
-        font-weight: bold !important;
-    }
-    
-    /* Secondary text - SOFTER AQUA */
+    /* Secondary text - BRIGHT AQUA (not dimmed) */
     .text-secondary {
-        color: #40e0d0 !important;
+        color: #00ffff !important;
+        opacity: 0.9 !important;
     }
     
     /* Status indicators - BRIGHT AQUA */
@@ -487,29 +489,25 @@ class DashboardData:
                 # Calculate returns
                 total_return = (total_pnl / start_balance) * 100 if start_balance > 0 else 0
                 
-                # Calculate actual trading days from July 13 to today
+                # Calculate actual trading days from July 13 to today (FIXED)
                 if bot_id == "ETH_VAULT":
-                    start_date = datetime.strptime(ETH_VAULT_START_DATE, "%Y-%m-%d")
+                    # FORCE July 13 as start date - NOT vault creation date
+                    start_date = datetime.strptime("2025-07-13", "%Y-%m-%d")
                     today = datetime.strptime("2025-07-27", "%Y-%m-%d")  # July 27
                     trading_days = (today - start_date).days  # Should be exactly 14 days
+                    print(f"DEBUG: Using July 13 start date, calculated {trading_days} days")
                 else:
                     trading_days = 75  # Adjust for PURR bot
                 
                 avg_daily_return = total_return / trading_days if trading_days > 0 else 0
                 
-                # Calculate CAGR properly - but only if reasonable time period
-                if trading_days >= 30 and start_balance > 0 and account_value > start_balance:
-                    years = trading_days / 365.25
-                    cagr = ((account_value / start_balance) ** (1 / years) - 1) * 100
-                elif trading_days > 0 and start_balance > 0:
-                    # FIXED: For short periods, calculate actual CAGR properly
-                    total_return_factor = account_value / start_balance
-                    if total_return_factor > 0 and trading_days > 0:
-                        daily_return_factor = total_return_factor ** (1 / trading_days)
-                        annual_factor = daily_return_factor ** 365.25
-                        cagr = (annual_factor - 1) * 100
-                    else:
-                        cagr = 0
+                # FIXED: Calculate CAGR using ONLY 14 days (not 47)
+                if trading_days > 0 and start_balance > 0 and account_value > start_balance:
+                    total_growth_factor = account_value / start_balance
+                    daily_growth_factor = total_growth_factor ** (1 / trading_days)
+                    annual_growth_factor = daily_growth_factor ** 365.25
+                    cagr = (annual_growth_factor - 1) * 100
+                    print(f"DEBUG: CAGR calc - {trading_days} days, factor {total_growth_factor}, CAGR {cagr}")
                 else:
                     cagr = 0
                 
