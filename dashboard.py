@@ -939,7 +939,501 @@ def render_bot_header(bot_config: BotConfig, performance: Dict, position_data: D
             <h1 style="color: {pnl_color}; margin: 0 0 0.5rem 0; font-size: 3.2rem; font-weight: 300; letter-spacing: -2px;">
                 {today_return_pct:+.3f}%
             </h1>
-            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">${performance['today_pnl']:,.2f} P&L</p>
+            <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">{'
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">{'
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">{'
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">{'
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -1157,7 +1651,7016 @@ if __name__ == "__main__":
             st.markdown(f"""
             <div class="metric-container">
                 <h4>{eth_config.name} ✅</h4>
-                <p><span class="status-live">● {eth_config.status}</span> | ${eth_perf['total_pnl']:,.2f} P&L</p>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["total_pnl"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["account_value"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["total_pnl"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{unrealized_pnl:,.2f}'}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["total_pnl"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["account_value"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["total_pnl"]:,.2f}'}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{performance["today_pnl"]:,.2f}'} P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        total_color = "performance-positive" if performance['total_pnl'] >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
+            <h2 class="{total_color}" style="margin-bottom: 0.5rem;">${performance['total_pnl']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">All-time</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Account Value</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.5rem;">${performance['account_value']:,.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Current Balance</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        position_color = "performance-positive" if position_data['direction'] == 'long' else "performance-negative" if position_data['direction'] == 'short' else "#94a3b8"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Live Position</h4>
+            <h2 style="color: {position_color}; margin-bottom: 0.5rem;">{position_data['direction'].upper()}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{position_data['size']:.3f} {bot_config.asset}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col5:
+        unrealized_pnl = position_data.get('unrealized_pnl', 0.0)
+        unrealized_color = "performance-positive" if unrealized_pnl >= 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #00ffff; margin-bottom: 0.5rem;">Unrealized P&L</h4>
+            <h2 class="{unrealized_color}" style="margin-bottom: 0.5rem;">${unrealized_pnl:,.2f}</h2>
+            <p style="color: #00ffff; font-size: 0.9em;">Live Position</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def render_performance_metrics(performance: Dict, bot_id: str):
+    """🎯 Enhanced performance metrics - ALL REAL CALCULATIONS"""
+    st.markdown('<h3 class="gradient-header">📊 Performance Analytics - Real Calculations</h3>', unsafe_allow_html=True)
+    
+    # Primary metrics row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr') and performance['cagr'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if performance.get('avg_daily_return') and performance['avg_daily_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily return rate</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3.5rem; font-weight: 300; letter-spacing: -2px;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        total_return_color = "performance-positive" if performance.get('total_return') and performance['total_return'] > 0 else "performance-negative"
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Secondary metrics row - 🎯 ALL REAL CALCULATIONS NOW!
+    st.markdown("### 📈 Risk-Adjusted Metrics - Real Calculations")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+def main():
+    """Main dashboard application"""
+    st.markdown('<h1 class="gradient-header" style="text-align: center; margin-bottom: 0.5rem;">🚀 Hyperliquid Trading Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 1.1em;"><strong>Live Production Multi-Bot Portfolio</strong> | Real Calculations ✅</p>', unsafe_allow_html=True)
+    
+    # Show API status at top
+    render_api_status()
+    
+    st.markdown("---")
+    
+    # Initialize data manager
+    data_manager = DashboardData()
+    
+    # Render sidebar
+    selected_view, timeframe = render_sidebar()
+    
+    if selected_view == "PORTFOLIO":
+        st.markdown('<h2 class="gradient-header">📊 Portfolio Overview</h2>', unsafe_allow_html=True)
+        
+        # Get performance for both bots
+        eth_perf = data_manager.get_live_performance("ETH_VAULT")
+        purr_perf = data_manager.get_live_performance("PURR_PERSONAL")
+        
+        # Portfolio summary
+        total_pnl = eth_perf['total_pnl'] + purr_perf['total_pnl']
+        total_today = eth_perf['today_pnl'] + purr_perf['today_pnl']
+        total_account_value = eth_perf['account_value'] + purr_perf['account_value']
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Address</h4>
+                <h3 style="color: #a855f7;">{vault_display}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Trading account</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Note about data
+        st.success("🎯 **Real Calculations Active**: All metrics are now calculated from your actual trading data - Win rate from fills, Max drawdown from equity curve, Profit factor from P&L, Sharpe/Sortino from volatility analysis, and Today's P&L from live trades!")
+    
+    # Footer with real-time info
+    st.markdown("---")
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.markdown(f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    with col2:
+        st.markdown("**🔄 Auto-refresh:** Available")
+    with col3:
+        st.markdown("**📊 Data:** Real Calculations ✅")
+
+if __name__ == "__main__":
+    main()color: #94a3b8;">Portfolio P&L</h4>
+                <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            today_color = "performance-positive" if total_today >= 0 else "performance-negative"
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Today's Total</h4>
+                <h2 class="{today_color}">${total_today:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Total Account Value</h4>
+                <h2 style="color: #8b5cf6;">${total_account_value:,.2f}</h2>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Individual bot status
+        st.markdown("### Bot Status")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            eth_config = data_manager.bot_configs["ETH_VAULT"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{eth_config.name} ✅</h4>
+                <p><span class="status-live">● {eth_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | {'
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            purr_config = data_manager.bot_configs["PURR_PERSONAL"]
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4>{purr_config.name} ✅</h4>
+                <p><span class="status-live">● {purr_config.status}</span> | ${purr_perf['total_pnl']:,.2f} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{purr_perf["total_pnl"]:,.2f}'} P&L</p>
+                <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {purr_perf['win_rate']:.1f}% | Max DD: {purr_perf['max_drawdown']:.1f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+    else:
+        # Individual bot view
+        bot_config = data_manager.bot_configs[selected_view]
+        performance = data_manager.get_live_performance(selected_view)
+        position_data = data_manager.get_live_position_data(selected_view)
+        
+        # Render bot dashboard
+        render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Performance metrics
+        render_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Basic live data summary
+        st.markdown('<h3 class="gradient-header">📊 Live Trading Summary</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Data Source</h4>
+                <h3 style="color: #10b981;">Hyperliquid API</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real Calculations ✅</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Last Update</h4>
+                <h3 style="color: #8b5cf6;">{datetime.now().strftime('%H:%M:%S')}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Real-time</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            days_trading = performance.get('trading_days', 14)
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style="color: #94a3b8;">Trading Days</h4>
+                <h3 style="color: #f59e0b;">{days_trading}</h3>
+                <p style="color: #94a3b8; font-size: 0.9em;">Since July 13</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            if bot_config.vault_address:
+                vault_display = f"{bot_config.vault_address[:6]}...{bot_config.vault_address[-4:]}"
+            else:
+                vault_display = "Personal"
+            
+            st.markdown(f"""
+            <div class="metric-container">
+                <h4 style=" + f'{eth_perf["total_pnl"]:,.2f}'} P&L</p>
                 <p style="color: #94a3b8; font-size: 0.9em;">Win Rate: {eth_perf['win_rate']:.1f}% | Max DD: {eth_perf['max_drawdown']:.1f}%</p>
             </div>
             """, unsafe_allow_html=True)
