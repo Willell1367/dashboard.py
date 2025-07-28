@@ -366,29 +366,42 @@ class HyperliquidAPI:
                     size = float(position['position']['szi'])
                     direction = 'long' if size > 0 else 'short' if size < 0 else 'flat'
                     
-                    # FIXED: Get actual unrealized P&L from position data
-                    unrealized_pnl = float(position.get('unrealizedPnl', 0))
+                    # ENHANCED: Try multiple ways to get unrealized P&L
+                    unrealized_pnl = 0
                     
-                    # If API doesn't provide unrealized P&L, calculate it
-                    if unrealized_pnl == 0 and size != 0:
-                        # Get current mark price and entry price to calculate unrealized
+                    # Method 1: Direct from position data
+                    if 'unrealizedPnl' in position:
+                        unrealized_pnl = float(position['unrealizedPnl'])
+                    
+                    # Method 2: From position sub-object
+                    elif 'position' in position and 'unrealizedPnl' in position['position']:
+                        unrealized_pnl = float(position['position']['unrealizedPnl'])
+                    
+                    # Method 3: Calculate from entry price and current mark price
+                    elif size != 0:
                         entry_price = float(position['position'].get('entryPx', 0))
-                        # You'll need to get current market price here
-                        # For now, estimate based on position size and typical ETH moves
-                        if asset == "ETH" and abs(size) > 0:
-                            # Estimate unrealized based on typical ETH volatility
-                            unrealized_pnl = abs(size) * 50 * (1 if size > 0 else -1)  # Rough estimate
+                        mark_price = float(position.get('markPx', entry_price))
+                        
+                        if entry_price > 0 and mark_price > 0:
+                            # Calculate P&L: (mark_price - entry_price) * size
+                            price_diff = mark_price - entry_price
+                            unrealized_pnl = price_diff * size
+                    
+                    # Debug logging
+                    print(f"DEBUG {asset}: size={size}, direction={direction}, unrealized=${unrealized_pnl}")
                     
                     return {
                         'size': size,
                         'direction': direction,
                         'unrealized_pnl': unrealized_pnl,
-                        'entry_price': float(position['position'].get('entryPx', 0))
+                        'entry_price': float(position['position'].get('entryPx', 0)),
+                        'mark_price': float(position.get('markPx', 0))
                     }
-            return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0, 'entry_price': 0}
+            
+            return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0, 'entry_price': 0, 'mark_price': 0}
         except Exception as e:
             print(f"Position API error: {e}")
-            return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0, 'entry_price': 0}
+            return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0, 'entry_price': 0, 'mark_price': 0}
     
     def get_fills(self, address: str) -> List[Dict]:
         """Get trade history"""
