@@ -652,10 +652,8 @@ def create_performance_breakdown_chart(performance: Dict, bot_id: str) -> go.Fig
     current_year = current_date.year
     
     if bot_id == "ETH_VAULT":
-        # Show May, June, July, August for ETH bot
+        # Show only July and August for ETH bot (when actually trading)
         months_to_show = [
-            (2025, 5, "May"),      # Pre-launch (will show 0 or minimal)
-            (2025, 6, "June"),     # Pre-launch (will show 0 or minimal) 
             (2025, 7, "July"),     # Launch month (July 13 start)
             (2025, 8, "August")    # Current/recent month
         ]
@@ -666,34 +664,39 @@ def create_performance_breakdown_chart(performance: Dict, bot_id: str) -> go.Fig
         ]
     
     for year, month, month_name in months_to_show:
-        if year > current_year or (year == current_year and month > current_month):
-            continue  # Skip future months
+        # Always include all months for ETH bot (May, June, July, August)
+        # Only skip future months for ONDO bot
+        if bot_id == "ONDO_PERSONAL" and (year > current_year or (year == current_year and month > current_month)):
+            continue
             
         month_start = datetime(year, month, 1)
         
         if month_start < bot_start_date:
-            # Pre-launch months show zero
+            # Pre-launch months show zero (May, June for ETH)
             month_pnl = 0
         elif year == current_year and month == current_month:
             # Current month - use actual days
             days_in_month = current_date.day
-            if bot_start_date.month == current_month:
+            if bot_start_date.month == current_month and bot_start_date.year == current_year:
                 # Bot started this month, count from start date
                 days_active = (current_date - bot_start_date).days + 1
                 month_pnl = daily_avg * days_active
             else:
                 month_pnl = daily_avg * days_in_month
         else:
-            # Full past months
+            # Past months that were active
             if bot_start_date.month == month and bot_start_date.year == year:
-                # Launch month - count from start date to end of month
+                # Launch month (July for ETH) - count from start date to end of month
                 days_in_month = 31 if month in [1,3,5,7,8,10,12] else 30 if month != 2 else 28
-                days_active = days_in_month - bot_start_date.day + 1
+                days_active = days_in_month - bot_start_date.day + 1  # July 13-31 = 19 days
                 month_pnl = daily_avg * days_active * (0.9 + 0.2 * np.random.random())
-            else:
+            elif month_start > bot_start_date:
                 # Full month after launch
                 days_in_month = 31 if month in [1,3,5,7,8,10,12] else 30 if month != 2 else 28
                 month_pnl = daily_avg * days_in_month * (0.9 + 0.2 * np.random.random())
+            else:
+                # Month before launch (May, June for ETH)
+                month_pnl = 0
         
         months_data.append({
             'month': month_name,
@@ -774,27 +777,25 @@ def render_live_trade_feed(fills: List[Dict], bot_id: str, limit: int = 10):
     st.markdown('<h3 class="gradient-header">📊 Live Trade Feed</h3>', unsafe_allow_html=True)
     
     if not fills:
-        st.markdown("""
-        <div class="trade-feed">
-            <div class="trade-item">
-                <span style="color: #94a3b8;">No recent trades available</span><br>
-                <small>Trades will appear here as they execute</small>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("🔄 No recent trades available. Trades will appear here as they execute.")
         return
     
     # Sort by time (most recent first) and limit
     recent_fills = sorted(fills, key=lambda x: x.get('time', 0), reverse=True)[:limit]
     
-    trade_feed_html = '<div class="trade-feed">'
+    # Filter to only show fills with actual P&L
+    trade_fills = [fill for fill in recent_fills if abs(float(fill.get('closedPnl', 0))) > 0.01]
     
-    for fill in recent_fills:
+    if not trade_fills:
+        st.info("🔄 No profitable trades to display yet. Trade details will appear after executions.")
+        return
+    
+    # Create a clean container for trades
+    st.markdown('<div class="trade-feed">', unsafe_allow_html=True)
+    
+    for fill in trade_fills[:5]:  # Show top 5 trades
         try:
             pnl = float(fill.get('closedPnl', 0))
-            if abs(pnl) < 0.01:
-                continue
-                
             timestamp = datetime.fromtimestamp(fill.get('time', 0) / 1000)
             time_str = timestamp.strftime('%H:%M:%S')
             date_str = timestamp.strftime('%m/%d')
@@ -804,27 +805,20 @@ def render_live_trade_feed(fills: List[Dict], bot_id: str, limit: int = 10):
             price = float(fill.get('px', 0))
             side = fill.get('side', 'Unknown')
             
-            pnl_color = '#10b981' if pnl > 0 else '#ef4444'
-            pnl_sign = '+' if pnl > 0 else ''
-            trade_class = 'trade-item' if pnl > 0 else 'trade-item loss'
+            pnl_color = "🟢" if pnl > 0 else "🔴"
+            pnl_sign = "+" if pnl > 0 else ""
             
-            trade_feed_html += f'''
-            <div class="{trade_class}">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #00ffff; font-weight: bold;">{asset} {side.upper()}</span>
-                    <span style="color: {pnl_color}; font-weight: bold;">{pnl_sign}${pnl:,.2f}</span>
-                </div>
-                <div style="margin-top: 0.25rem; color: #94a3b8; font-size: 0.8rem;">
-                    {size:.3f} @ ${price:,.2f} • {date_str} {time_str}
-                </div>
-            </div>
-            '''
+            # Use clean markdown format instead of HTML
+            st.markdown(f"""
+**{pnl_color} {asset} {side.upper()}** | **{pnl_sign}${pnl:,.2f}**  
+`{size:.3f} @ ${price:,.2f}` • {date_str} {time_str}
+            """)
+            st.divider()
             
         except (ValueError, KeyError):
             continue
     
-    trade_feed_html += '</div>'
-    st.markdown(trade_feed_html, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
     """Enhanced performance metrics with daily dollar amount and additional stats"""
@@ -1528,11 +1522,6 @@ def main():
             # Weekly/Monthly Performance Breakdown
             performance_fig = create_performance_breakdown_chart(performance, selected_view)
             st.plotly_chart(performance_fig, use_container_width=True)
-        
-        st.markdown("---")
-        
-        # Live Trade Feed
-        render_live_trade_feed(fills, selected_view, limit=10)
         
         st.markdown("---")
         
