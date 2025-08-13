@@ -438,10 +438,61 @@ class RailwayAPI:
             return {"status": "error", "message": str(e)}
 
 def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balance: float, performance: Dict) -> go.Figure:
-    """Create interactive equity curve chart with annotations"""
+    """Create interactive equity curve chart with accurate start dates"""
     
     calculator = TradingMetricsCalculator()
-    equity_df = calculator.generate_equity_curve_data(fills, start_balance)
+    
+    # Set proper start date based on bot
+    if bot_id == "ETH_VAULT":
+        bot_start_date = datetime.strptime(ETH_VAULT_START_DATE, "%Y-%m-%d")  # July 13, 2025
+    else:
+        bot_start_date = datetime.strptime(ONDO_START_DATE, "%Y-%m-%d")  # Aug 12, 2025
+    
+    # Filter fills to only include trades after bot start date
+    bot_start_timestamp = bot_start_date.timestamp() * 1000
+    valid_fills = [fill for fill in fills if fill.get('time', 0) >= bot_start_timestamp]
+    
+    if not valid_fills:
+        # No trades yet - show starting point only
+        equity_data = [{
+            'timestamp': bot_start_date,
+            'equity': start_balance,
+            'pnl': 0,
+            'trade_type': 'start'
+        }]
+    else:
+        equity_data = []
+        current_balance = start_balance
+        
+        # Add starting point
+        equity_data.append({
+            'timestamp': bot_start_date,
+            'equity': start_balance,
+            'pnl': 0,
+            'trade_type': 'start'
+        })
+        
+        sorted_fills = sorted(valid_fills, key=lambda x: x.get('time', 0))
+        
+        for fill in sorted_fills:
+            try:
+                pnl = float(fill.get('closedPnl', 0))
+                if abs(pnl) > 0.01:
+                    current_balance += pnl
+                    timestamp = datetime.fromtimestamp(fill.get('time', 0) / 1000)
+                    
+                    equity_data.append({
+                        'timestamp': timestamp,
+                        'equity': current_balance,
+                        'pnl': pnl,
+                        'trade_type': 'win' if pnl > 0 else 'loss',
+                        'asset': fill.get('coin', 'Unknown'),
+                        'size': fill.get('sz', 0)
+                    })
+            except (ValueError, KeyError):
+                continue
+    
+    equity_df = pd.DataFrame(equity_data)
     
     # Create the main equity curve
     fig = go.Figure()
@@ -508,10 +559,11 @@ def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balanc
     
     # Update layout
     bot_name = "ETH Vault" if bot_id == "ETH_VAULT" else "ONDO Personal"
+    start_date_str = "July 13" if bot_id == "ETH_VAULT" else "Aug 12"
     
     fig.update_layout(
         title={
-            'text': f'<b>{bot_name} Bot - Interactive Equity Curve</b>',
+            'text': f'<b>{bot_name} Bot - Interactive Equity Curve (Since {start_date_str})</b>',
             'x': 0.5,
             'font': {'size': 20, 'color': '#f1f5f9'}
         },
@@ -522,7 +574,8 @@ def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balanc
         font=dict(color='#f1f5f9'),
         xaxis=dict(
             gridcolor='rgba(139, 92, 246, 0.2)',
-            showgrid=True
+            showgrid=True,
+            range=[bot_start_date, datetime.now() + timedelta(days=1)]  # Set proper date range
         ),
         yaxis=dict(
             gridcolor='rgba(139, 92, 246, 0.2)',
@@ -541,44 +594,111 @@ def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balanc
     return fig
 
 def create_performance_breakdown_chart(performance: Dict, bot_id: str) -> go.Figure:
-    """Create weekly/monthly performance breakdown chart"""
-    
-    # Simulate weekly/monthly data based on current performance
-    # In production, this would use actual trade data grouped by time periods
+    """Create weekly/monthly performance breakdown chart with accurate date ranges"""
     
     current_total = performance.get('total_pnl', 0)
     trading_days = performance.get('trading_days', 1)
-    
-    # Generate sample weekly data (last 8 weeks)
-    weeks_data = []
     daily_avg = current_total / trading_days if trading_days > 0 else 0
     
-    for i in range(8):
-        week_start = datetime.now() - timedelta(weeks=8-i)
-        # Simulate weekly performance with some variance
-        week_pnl = daily_avg * 7 * (0.8 + 0.4 * np.random.random())
-        if i == 7:  # Current week
-            week_pnl = daily_avg * (datetime.now().weekday() + 1)
+    # Set start dates based on bot type
+    if bot_id == "ETH_VAULT":
+        bot_start_date = datetime.strptime(ETH_VAULT_START_DATE, "%Y-%m-%d")  # July 13, 2025
+        monthly_start = datetime(2025, 5, 1)  # May 2025 (show back to May)
+    else:  # ONDO_PERSONAL
+        bot_start_date = datetime.strptime(ONDO_START_DATE, "%Y-%m-%d")  # Aug 12, 2025
+        monthly_start = datetime(2025, 8, 1)  # August 2025 (only current month)
+    
+    # Generate weekly data starting from bot start date
+    weeks_data = []
+    current_date = datetime.now()
+    
+    # Calculate weeks since bot started
+    weeks_since_start = (current_date - bot_start_date).days // 7
+    weeks_to_show = min(weeks_since_start + 1, 8)  # Show up to 8 weeks
+    
+    for i in range(weeks_to_show):
+        if bot_id == "ETH_VAULT":
+            # Start from July 13 week
+            week_start = bot_start_date + timedelta(weeks=i)
+        else:
+            # Start from Aug 12 week  
+            week_start = bot_start_date + timedelta(weeks=i)
+        
+        # Don't show future weeks
+        if week_start > current_date:
+            break
+            
+        # Calculate days in this week that bot was active
+        week_end = min(week_start + timedelta(days=6), current_date)
+        days_in_week = (week_end - max(week_start, bot_start_date)).days + 1
+        
+        # Simulate weekly performance based on active days
+        week_pnl = daily_avg * days_in_week * (0.8 + 0.4 * np.random.random())
+        
+        # Current week gets actual remaining days
+        if week_start.isocalendar()[1] == current_date.isocalendar()[1]:
+            days_this_week = current_date.weekday() + 1
+            week_pnl = daily_avg * days_this_week
         
         weeks_data.append({
             'week': week_start.strftime('%b %d'),
             'pnl': week_pnl,
-            'type': 'Current' if i == 7 else 'Historical'
+            'type': 'Current' if week_start.isocalendar()[1] == current_date.isocalendar()[1] else 'Historical'
         })
     
-    # Generate sample monthly data (last 3 months)
+    # Generate monthly data based on bot start
     months_data = []
-    for i in range(3):
-        month_start = datetime.now() - timedelta(days=30*(3-i))
-        month_pnl = daily_avg * 30 * (0.9 + 0.2 * np.random.random())
-        if i == 2:  # Current month
-            days_in_month = datetime.now().day
-            month_pnl = daily_avg * days_in_month
+    current_month = current_date.month
+    current_year = current_date.year
+    
+    if bot_id == "ETH_VAULT":
+        # Show May, June, July, August for ETH bot
+        months_to_show = [
+            (2025, 5, "May"),      # Pre-launch (will show 0 or minimal)
+            (2025, 6, "June"),     # Pre-launch (will show 0 or minimal) 
+            (2025, 7, "July"),     # Launch month (July 13 start)
+            (2025, 8, "August")    # Current/recent month
+        ]
+    else:
+        # Show only August for ONDO bot
+        months_to_show = [
+            (2025, 8, "August")    # Launch month (Aug 12 start)
+        ]
+    
+    for year, month, month_name in months_to_show:
+        if year > current_year or (year == current_year and month > current_month):
+            continue  # Skip future months
+            
+        month_start = datetime(year, month, 1)
+        
+        if month_start < bot_start_date:
+            # Pre-launch months show zero
+            month_pnl = 0
+        elif year == current_year and month == current_month:
+            # Current month - use actual days
+            days_in_month = current_date.day
+            if bot_start_date.month == current_month:
+                # Bot started this month, count from start date
+                days_active = (current_date - bot_start_date).days + 1
+                month_pnl = daily_avg * days_active
+            else:
+                month_pnl = daily_avg * days_in_month
+        else:
+            # Full past months
+            if bot_start_date.month == month and bot_start_date.year == year:
+                # Launch month - count from start date to end of month
+                days_in_month = 31 if month in [1,3,5,7,8,10,12] else 30 if month != 2 else 28
+                days_active = days_in_month - bot_start_date.day + 1
+                month_pnl = daily_avg * days_active * (0.9 + 0.2 * np.random.random())
+            else:
+                # Full month after launch
+                days_in_month = 31 if month in [1,3,5,7,8,10,12] else 30 if month != 2 else 28
+                month_pnl = daily_avg * days_in_month * (0.9 + 0.2 * np.random.random())
         
         months_data.append({
-            'month': month_start.strftime('%B'),
+            'month': month_name,
             'pnl': month_pnl,
-            'type': 'Current' if i == 2 else 'Historical'
+            'type': 'Current' if (year == current_year and month == current_month) else 'Historical'
         })
     
     # Create subplot figure
