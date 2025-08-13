@@ -820,6 +820,303 @@ def render_live_trade_feed(fills: List[Dict], bot_id: str, limit: int = 10):
     
     st.markdown('</div>', unsafe_allow_html=True)
 
+def calculate_strategy_health_score(performance: Dict, bot_id: str) -> Dict:
+    """Calculate comprehensive strategy health score"""
+    
+    # Get key metrics
+    cagr = performance.get('cagr', 0)
+    sharpe = performance.get('sharpe_ratio', 0)
+    max_dd = abs(performance.get('max_drawdown', 0))
+    win_rate = performance.get('win_rate', 0)
+    profit_factor = performance.get('profit_factor', 0)
+    
+    # Scoring weights (total = 100)
+    weights = {
+        'returns': 30,      # CAGR performance
+        'risk_adj': 25,     # Sharpe ratio
+        'drawdown': 20,     # Max drawdown (lower is better)
+        'consistency': 15,  # Win rate
+        'efficiency': 10    # Profit factor
+    }
+    
+    # Score components (0-100 scale)
+    scores = {}
+    
+    # Returns score (CAGR)
+    if cagr >= 100:
+        scores['returns'] = 100
+    elif cagr >= 50:
+        scores['returns'] = 70 + (cagr - 50) * 0.6
+    elif cagr >= 20:
+        scores['returns'] = 40 + (cagr - 20) * 1.0
+    else:
+        scores['returns'] = max(0, cagr * 2)
+    
+    # Risk-adjusted score (Sharpe)
+    if sharpe >= 3:
+        scores['risk_adj'] = 100
+    elif sharpe >= 2:
+        scores['risk_adj'] = 80 + (sharpe - 2) * 20
+    elif sharpe >= 1:
+        scores['risk_adj'] = 50 + (sharpe - 1) * 30
+    else:
+        scores['risk_adj'] = max(0, sharpe * 50)
+    
+    # Drawdown score (lower drawdown = higher score)
+    if max_dd <= 2:
+        scores['drawdown'] = 100
+    elif max_dd <= 5:
+        scores['drawdown'] = 80 + (5 - max_dd) * 6.7
+    elif max_dd <= 10:
+        scores['drawdown'] = 50 + (10 - max_dd) * 6
+    else:
+        scores['drawdown'] = max(0, 50 - (max_dd - 10) * 2)
+    
+    # Consistency score (Win rate)
+    if win_rate >= 70:
+        scores['consistency'] = 100
+    elif win_rate >= 50:
+        scores['consistency'] = 70 + (win_rate - 50) * 1.5
+    else:
+        scores['consistency'] = max(0, win_rate * 1.4)
+    
+    # Efficiency score (Profit factor)
+    if profit_factor >= 3:
+        scores['efficiency'] = 100
+    elif profit_factor >= 2:
+        scores['efficiency'] = 70 + (profit_factor - 2) * 30
+    elif profit_factor >= 1.5:
+        scores['efficiency'] = 40 + (profit_factor - 1.5) * 60
+    else:
+        scores['efficiency'] = max(0, (profit_factor - 1) * 80)
+    
+    # Calculate weighted total
+    total_score = sum(scores[component] * weights[component] / 100 for component in scores)
+    
+    # Determine health status
+    if total_score >= 85:
+        status = "EXCELLENT"
+        color = "#10b981"
+        emoji = "🟢"
+    elif total_score >= 70:
+        status = "GOOD"
+        color = "#8b5cf6"
+        emoji = "🟡"
+    elif total_score >= 50:
+        status = "FAIR"
+        color = "#f59e0b"
+        emoji = "🟠"
+    else:
+        status = "POOR"
+        color = "#ef4444"
+        emoji = "🔴"
+    
+    return {
+        'total_score': total_score,
+        'status': status,
+        'color': color,
+        'emoji': emoji,
+        'component_scores': scores,
+        'weights': weights
+    }
+
+def calculate_edge_decay_status(performance: Dict, bot_id: str) -> Dict:
+    """Calculate edge decay warning status"""
+    
+    # Get recent performance indicators
+    total_return = performance.get('total_return', 0)
+    sharpe = performance.get('sharpe_ratio', 0)
+    win_rate = performance.get('win_rate', 0)
+    trading_days = performance.get('trading_days', 1)
+    
+    # Edge decay indicators
+    warning_flags = []
+    decay_score = 0
+    
+    # Check performance degradation
+    if bot_id == "ETH_VAULT":
+        # ETH bot benchmarks
+        if total_return < 15:  # Below 15% total return
+            warning_flags.append("Low Total Return")
+            decay_score += 25
+        if sharpe < 8:  # Below 8 Sharpe
+            warning_flags.append("Declining Sharpe")
+            decay_score += 20
+        if win_rate < 55:  # Below 55% win rate
+            warning_flags.append("Low Win Rate")
+            decay_score += 15
+    else:
+        # ONDO bot benchmarks (early stage)
+        if trading_days > 7 and total_return < 2:  # After 1 week, below 2%
+            warning_flags.append("Slow Start")
+            decay_score += 20
+        if trading_days > 14 and win_rate < 60:  # After 2 weeks, below 60%
+            warning_flags.append("Low Win Rate")
+            decay_score += 25
+    
+    # Time-based decay indicators
+    if trading_days > 14:  # After 2 weeks
+        recent_avg = performance.get('avg_daily_return', 0)
+        if recent_avg < 0.1:  # Less than 0.1% daily
+            warning_flags.append("Declining Daily Returns")
+            decay_score += 20
+    
+    # Determine status
+    if decay_score == 0:
+        status = "HEALTHY"
+        color = "#10b981"
+        emoji = "🟢"
+        message = "Strategy performing well"
+    elif decay_score <= 25:
+        status = "MONITORING"
+        color = "#f59e0b"
+        emoji = "🟡"
+        message = "Minor performance concerns"
+    elif decay_score <= 50:
+        status = "WARNING"
+        color = "#f97316"
+        emoji = "🟠"
+        message = "Strategy showing signs of decay"
+    else:
+        status = "CRITICAL"
+        color = "#ef4444"
+        emoji = "🔴"
+        message = "Significant performance degradation"
+    
+    return {
+        'status': status,
+        'color': color,
+        'emoji': emoji,
+        'message': message,
+        'decay_score': decay_score,
+        'warning_flags': warning_flags
+    }
+
+def render_strategy_health_dashboard(performance: Dict, bot_id: str):
+    """Render strategy health score and edge decay monitoring"""
+    
+    st.markdown('<h3 class="gradient-header">🎯 Strategy Health & Edge Monitoring</h3>', unsafe_allow_html=True)
+    
+    # Calculate health metrics
+    health_data = calculate_strategy_health_score(performance, bot_id)
+    edge_data = calculate_edge_decay_status(performance, bot_id)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        # Strategy Health Score
+        score = health_data['total_score']
+        status = health_data['status']
+        color = health_data['color']
+        emoji = health_data['emoji']
+        
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Strategy Health Score</h4>
+            <h1 style="color: {color}; margin: 0; font-size: 3.5rem; font-weight: 300;">
+                {score:.0f}
+            </h1>
+            <p style="color: {color}; font-size: 1.2rem; margin: 0.5rem 0;">
+                {emoji} {status}
+            </p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col2:
+        # Edge Decay Status
+        edge_status = edge_data['status']
+        edge_color = edge_data['color']
+        edge_emoji = edge_data['emoji']
+        edge_message = edge_data['message']
+        
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Edge Decay Monitor</h4>
+            <h2 style="color: {edge_color}; margin: 0 0 0.5rem 0; font-size: 2rem;">
+                {edge_emoji} {edge_status}
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+                {edge_message}
+            </p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col3:
+        # Alert Configuration
+        telegram_configured = False  # This would check if Telegram is set up
+        alert_color = "#10b981" if telegram_configured else "#94a3b8"
+        alert_status = "ACTIVE" if telegram_configured else "SETUP NEEDED"
+        
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Alert System</h4>
+            <h2 style="color: {alert_color}; margin: 0 0 0.5rem 0; font-size: 1.5rem;">
+                📱 {alert_status}
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+                Telegram notifications
+            </p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    # Health Score Breakdown
+    if st.expander("📊 Health Score Breakdown", expanded=False):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Component Scores:**")
+            scores = health_data['component_scores']
+            weights = health_data['weights']
+            
+            for component, score in scores.items():
+                weight = weights[component]
+                weighted_score = score * weight / 100
+                
+                component_names = {
+                    'returns': 'Returns (CAGR)',
+                    'risk_adj': 'Risk-Adjusted (Sharpe)',
+                    'drawdown': 'Drawdown Control',
+                    'consistency': 'Consistency (Win Rate)',
+                    'efficiency': 'Efficiency (Profit Factor)'
+                }
+                
+                st.metric(
+                    component_names[component],
+                    f"{score:.0f}/100",
+                    f"Weight: {weight}% | Contribution: {weighted_score:.1f}"
+                )
+        
+        with col2:
+            if edge_data['warning_flags']:
+                st.markdown("**⚠️ Warning Flags:**")
+                for flag in edge_data['warning_flags']:
+                    st.markdown(f"• {flag}")
+            else:
+                st.markdown("**✅ No Warning Flags**")
+                st.markdown("Strategy is performing within expected parameters")
+    
+    # Telegram Setup Guide
+    if not telegram_configured:
+        with st.expander("📱 Setup Telegram Alerts", expanded=False):
+            st.markdown("""
+            **Quick Telegram Setup:**
+            
+            1. **Create Bot:** Message @BotFather on Telegram
+            2. **Get Token:** Save the bot token securely
+            3. **Get Chat ID:** Message your bot, then visit: 
+               `https://api.telegram.org/bot<TOKEN>/getUpdates`
+            4. **Configure:** Add to your environment variables
+            
+            **Alert Types:**
+            - 🚨 Edge decay warnings
+            - 📈 Performance milestones  
+            - ⚠️ System health alerts
+            - 📊 Daily P&L summaries
+            """)
+
 def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
     """Enhanced performance metrics with daily dollar amount and additional stats"""
     
@@ -832,6 +1129,107 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
     
     # Primary metrics row with daily dollar amount
     col1, col2, col3, col4, col5 = st.columns(5)
+    
+    with col1:
+        cagr_color = "performance-positive" if performance.get('cagr', 0) > 0 else "performance-negative"
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">CAGR (Annualized)</h4>
+            <h1 style="color: {cagr_color}; margin: 0; font-size: 3rem; font-weight: 300;">
+                {performance.get('cagr', 0):.1f}%
+            </h1>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col2:
+        daily_color = "performance-positive" if daily_dollar_avg > 0 else "performance-negative"
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Avg Daily $</h4>
+            <h1 style="color: {daily_color}; margin: 0; font-size: 3rem; font-weight: 300;">
+                ${daily_dollar_avg:,.0f}
+            </h1>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col3:
+        daily_pct_color = "performance-positive" if performance.get('avg_daily_return', 0) > 0 else "performance-negative"
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; font-size: 1rem;">Daily Return %</h4>
+            <h1 style="color: {daily_pct_color}; margin: 0; font-size: 3rem; font-weight: 300;">
+                {performance.get('avg_daily_return', 0):.3f}%
+            </h1>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col4:
+        total_return_color = "performance-positive" if performance.get('total_return', 0) > 0 else "performance-negative"
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total Return</h4>
+            <h2 class="{total_return_color}" style="margin-bottom: 0.3rem;">{performance.get('total_return', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">{performance.get('trading_days', 0)} days</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col5:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Win Rate ✅</h4>
+            <h2 style="color: #f59e0b; margin-bottom: 0.3rem;">{performance.get('win_rate', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade Fills</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    # Secondary metrics row
+    st.markdown("### 📈 Risk-Adjusted Metrics")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col2:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col3:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col4:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
     
     with col1:
         cagr_color = "performance-positive" if performance.get('cagr', 0) > 0 else "performance-negative"
@@ -1496,6 +1894,11 @@ def main():
         
         # Render bot dashboard
         render_bot_header(bot_config, performance, position_data)
+        
+        st.markdown("---")
+        
+        # Strategy Health & Edge Monitoring Dashboard
+        render_strategy_health_dashboard(performance, selected_view)
         
         st.markdown("---")
         
