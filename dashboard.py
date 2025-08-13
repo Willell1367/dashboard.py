@@ -1206,6 +1206,50 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
         '''
         st.markdown(metric_html, unsafe_allow_html=True)
     
+    # Secondary metrics row
+    st.markdown("### 📈 Risk-Adjusted Metrics")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col2:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col3:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col4:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
     with col2:
         daily_color = "performance-positive" if daily_dollar_avg > 0 else "performance-negative"
         metric_html = f'''
@@ -1250,14 +1294,6 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
         </div>
         '''
         st.markdown(metric_html, unsafe_allow_html=True)
-    
-    # Add Strategy Health & Edge Monitoring after the primary metrics
-    st.markdown("---")
-    render_strategy_health_dashboard(performance, selected_view)
-    
-    # Secondary metrics row - Risk-Adjusted Metrics (keep only once)
-    st.markdown("### 📈 Risk-Adjusted Metrics")
-    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         metric_html = f'''
@@ -1965,8 +2001,13 @@ def main():
         
         st.markdown("---")
         
-        # Enhanced Performance metrics with Strategy Health integrated
+        # Enhanced Performance metrics with daily dollar amount
         render_enhanced_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Strategy Health & Edge Monitoring Dashboard  
+        render_strategy_health_dashboard(performance, selected_view)
         
         st.markdown("---")
         
