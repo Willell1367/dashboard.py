@@ -662,19 +662,19 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
         ''', unsafe_allow_html=True)
 
 def render_live_trade_feed(fills: List[Dict], bot_id: str, limit: int = 5):
-    """Render live trade feed"""
+    """Render live trade feed with bright text"""
     
-    st.markdown('<h3 class="gradient-header">📊 Live Trade Feed</h3>', unsafe_allow_html=True)
+    st.markdown('<h3 style="color: #ffffff; font-weight: bold;">📊 Live Trade Feed</h3>', unsafe_allow_html=True)
     
     if not fills:
-        st.info("🔄 No recent trades available.")
+        st.markdown('<p style="color: #ffffff;">🔄 No recent trades available.</p>', unsafe_allow_html=True)
         return
     
     recent_fills = sorted(fills, key=lambda x: x.get('time', 0), reverse=True)[:limit]
     trade_fills = [fill for fill in recent_fills if abs(float(fill.get('closedPnl', 0))) > 0.01]
     
     if not trade_fills:
-        st.info("🔄 No profitable trades to display yet.")
+        st.markdown('<p style="color: #ffffff;">🔄 No profitable trades to display yet.</p>', unsafe_allow_html=True)
         return
     
     for fill in trade_fills:
@@ -689,14 +689,15 @@ def render_live_trade_feed(fills: List[Dict], bot_id: str, limit: int = 5):
             price = float(fill.get('px', 0))
             side = fill.get('side', 'Unknown')
             
-            pnl_color = "🟢" if pnl > 0 else "🔴"
+            pnl_color = "#10b981" if pnl > 0 else "#ef4444"
             pnl_sign = "+" if pnl > 0 else ""
             
-            st.markdown(f"""
-**{pnl_color} {asset} {side.upper()}** | **{pnl_sign}${pnl:,.2f}**  
-`{size:.3f} @ ${price:,.2f}` • {date_str} {time_str}
-            """)
-            st.divider()
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.6); padding: 1rem; border-radius: 8px; margin: 0.5rem 0; border-left: 3px solid {pnl_color};">
+                <h4 style="color: #ffffff; margin: 0; font-size: 1.1rem;">🟢 {asset} {side.upper()} | <span style="color: {pnl_color};">{pnl_sign}${pnl:,.2f}</span></h4>
+                <p style="color: #ffffff; margin: 0.5rem 0 0 0; font-family: monospace;">{size:.3f} @ ${price:,.2f} • {date_str} {time_str}</p>
+            </div>
+            ''', unsafe_allow_html=True)
             
         except (ValueError, KeyError):
             continue
@@ -1061,7 +1062,7 @@ def render_main_dashboard():
     st.markdown('<h3 class="gradient-header">📈 Interactive Performance Charts</h3>', unsafe_allow_html=True)
     
     # Create tabs for different chart views
-    chart_tab1, chart_tab2 = st.tabs(["📈 Equity Curve", "📊 Weekly & Monthly Performance"])
+    chart_tab1, chart_tab2, chart_tab3 = st.tabs(["📈 Equity Curve", "📊 Weekly & Monthly Performance", "⚖️ Bot Comparison"])
     
     with chart_tab1:
         equity_fig = create_interactive_equity_curve(selected_bot, fills, start_balance, performance)
@@ -1070,6 +1071,72 @@ def render_main_dashboard():
     with chart_tab2:
         breakdown_fig = create_performance_breakdown_chart(performance, selected_bot)
         st.plotly_chart(breakdown_fig, use_container_width=True)
+    
+    with chart_tab3:
+        # Bot comparison view
+        st.markdown('<h4 style="color: #f1f5f9; margin-bottom: 1.5rem;">🔍 ETH Vault vs ONDO Personal Bot Comparison</h4>', unsafe_allow_html=True)
+        
+        # Get both bot performances
+        eth_performance = data_manager.get_live_performance("ETH_VAULT")
+        ondo_performance = data_manager.get_live_performance("ONDO_PERSONAL")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2); text-align: center;">
+                <h3 style="color: #10b981; margin-bottom: 1rem;">ETH Vault Bot</h3>
+                <h2 style="color: #f1f5f9;">CAGR: {eth_performance.get('cagr', 0):.1f}%</h2>
+                <h3 style="color: #f1f5f9;">Total P&L: ${eth_performance.get('total_pnl', 0):,.2f}</h3>
+                <h4 style="color: #f1f5f9;">Win Rate: {eth_performance.get('win_rate', 0):.1f}%</h4>
+                <h4 style="color: #f1f5f9;">Sharpe: {eth_performance.get('sharpe_ratio', 0):.2f}</h4>
+                <h4 style="color: #f1f5f9;">Max DD: {eth_performance.get('max_drawdown', 0):.1f}%</h4>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.8); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2); text-align: center;">
+                <h3 style="color: #8b5cf6; margin-bottom: 1rem;">ONDO Personal Bot</h3>
+                <h2 style="color: #f1f5f9;">CAGR: {ondo_performance.get('cagr', 0):.1f}%</h2>
+                <h3 style="color: #f1f5f9;">Total P&L: ${ondo_performance.get('total_pnl', 0):,.2f}</h3>
+                <h4 style="color: #f1f5f9;">Win Rate: {ondo_performance.get('win_rate', 0):.1f}%</h4>
+                <h4 style="color: #f1f5f9;">Sharpe: {ondo_performance.get('sharpe_ratio', 0):.2f}</h4>
+                <h4 style="color: #f1f5f9;">Max DD: {ondo_performance.get('max_drawdown', 0):.1f}%</h4>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        # Summary comparison
+        st.markdown('<h4 style="color: #f1f5f9; margin-top: 2rem; margin-bottom: 1rem;">📊 Performance Summary</h4>', unsafe_allow_html=True)
+        
+        summary_col1, summary_col2, summary_col3 = st.columns(3)
+        
+        with summary_col1:
+            better_cagr = "ETH Vault" if eth_performance.get('cagr', 0) > ondo_performance.get('cagr', 0) else "ONDO Personal"
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.6); padding: 1rem; border-radius: 8px; text-align: center;">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Better CAGR</h5>
+                <h4 style="color: #10b981; margin: 0;">{better_cagr}</h4>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        with summary_col2:
+            better_winrate = "ETH Vault" if eth_performance.get('win_rate', 0) > ondo_performance.get('win_rate', 0) else "ONDO Personal"
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.6); padding: 1rem; border-radius: 8px; text-align: center;">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Better Win Rate</h5>
+                <h4 style="color: #f59e0b; margin: 0;">{better_winrate}</h4>
+            </div>
+            ''', unsafe_allow_html=True)
+        
+        with summary_col3:
+            better_sharpe = "ETH Vault" if eth_performance.get('sharpe_ratio', 0) > ondo_performance.get('sharpe_ratio', 0) else "ONDO Personal"
+            st.markdown(f'''
+            <div style="background: rgba(30, 41, 59, 0.6); padding: 1rem; border-radius: 8px; text-align: center;">
+                <h5 style="color: #f1f5f9; margin-bottom: 0.5rem;">Better Sharpe</h5>
+                <h4 style="color: #8b5cf6; margin: 0;">{better_sharpe}</h4>
+            </div>
+            ''', unsafe_allow_html=True)
     """Create weekly/monthly performance breakdown chart"""
     
     current_total = performance.get('total_pnl', 0)
