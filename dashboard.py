@@ -1032,13 +1032,13 @@ def render_main_dashboard():
     </div>
     """, unsafe_allow_html=True)
     
-    # Bot overview section
+    # Bot overview section - ALWAYS SHOW THIS
     render_bot_overview(data_manager)
     
     # Selected bot detailed analysis
     st.markdown("---")
     
-    # Get data for selected bot
+    # Get data for selected bot ONLY
     performance = data_manager.get_live_performance(selected_bot)
     fills = data_manager.get_bot_fills(selected_bot)
     position_data = data_manager.get_live_position_data(selected_bot)
