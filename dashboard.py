@@ -58,7 +58,7 @@ class DashboardData:
             print(f"Error initializing bot configs: {e}")
             return {}
     
-    def test_bot_connection(self, bot_id: str) -> Dict:
+    def test_bot_connection(self, bot_id: str):
         """Test connection to Railway deployed bot"""
         try:
             if self.railway_api:
@@ -69,7 +69,7 @@ class DashboardData:
             return {"status": "error", "message": str(e)}
     
     @st.cache_data(ttl=30)
-    def get_live_performance(_self, bot_id: str) -> Dict:
+    def get_live_performance(_self, bot_id: str):
         """Get live performance with fresh start for ONDO"""
         
         bot_config = _self.bot_configs[bot_id]
@@ -196,7 +196,7 @@ class DashboardData:
         
         return _self._get_fallback_performance(bot_id)
     
-    def _get_fallback_performance(self, bot_id: str) -> Dict:
+    def _get_fallback_performance(self, bot_id: str):
         """Fallback data when API fails"""
         
         if bot_id == "ETH_VAULT":
@@ -242,7 +242,7 @@ class DashboardData:
             }
     
     @st.cache_data(ttl=60)
-    def get_live_position_data(_self, bot_id: str) -> Dict:
+    def get_live_position_data(_self, bot_id: str):
         """Get live position data from Hyperliquid"""
         try:
             bot_config = _self.bot_configs[bot_id]
@@ -260,7 +260,7 @@ class DashboardData:
             return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0}
     
     @st.cache_data(ttl=60)
-    def get_bot_fills(_self, bot_id: str) -> List[Dict]:
+    def get_bot_fills(_self, bot_id: str):
         """Get trade fills for a specific bot"""
         try:
             bot_config = _self.bot_configs[bot_id]
@@ -285,58 +285,78 @@ class DashboardData:
             return []
 
 def render_api_status():
-    """Render API connection status"""
+    """Render API connection status with safe fallbacks"""
     st.markdown('<h3 class="gradient-header">🔗 Live API Status</h3>', unsafe_allow_html=True)
     
-    data_manager = DashboardData()
+    try:
+        data_manager = DashboardData()
+    except Exception as e:
+        st.error(f"Failed to initialize dashboard: {e}")
+        return
     
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if data_manager.api.connection_status:
+        if data_manager.api and data_manager.api.connection_status:
             st.markdown('<div class="connection-success">✅ Hyperliquid API: Connected</div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="connection-error">❌ Hyperliquid API: Failed</div>', unsafe_allow_html=True)
     
     with col2:
-        eth_status = data_manager.test_bot_connection("ETH_VAULT")
-        if eth_status.get("status") == "success":
-            response_time = eth_status.get('response_time', 0)
-            st.markdown(f'<div class="connection-success">✅ ETH Railway: {response_time:.2f}s</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="connection-error">❌ ETH Railway: Failed</div>', unsafe_allow_html=True)
+        try:
+            eth_status = data_manager.test_bot_connection("ETH_VAULT")
+            if eth_status.get("status") == "success":
+                response_time = eth_status.get('response_time', 0)
+                st.markdown(f'<div class="connection-success">✅ ETH Railway: {response_time:.2f}s</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="connection-error">❌ ETH Railway: Failed</div>', unsafe_allow_html=True)
+        except Exception as e:
+            st.markdown('<div class="connection-error">❌ ETH Railway: Error</div>', unsafe_allow_html=True)
     
     with col3:
-        ondo_status = data_manager.test_bot_connection("ONDO_PERSONAL")
-        if ondo_status.get("status") == "success":
-            response_time = ondo_status.get('response_time', 0)
-            st.markdown(f'<div class="connection-success">✅ ONDO Railway: {response_time:.2f}s</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="connection-error">❌ ONDO Railway: Failed</div>', unsafe_allow_html=True)
+        try:
+            ondo_status = data_manager.test_bot_connection("ONDO_PERSONAL")
+            if ondo_status.get("status") == "success":
+                response_time = ondo_status.get('response_time', 0)
+                st.markdown(f'<div class="connection-success">✅ ONDO Railway: {response_time:.2f}s</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="connection-error">❌ ONDO Railway: Failed</div>', unsafe_allow_html=True)
+        except Exception as e:
+            st.markdown('<div class="connection-error">❌ ONDO Railway: Error</div>', unsafe_allow_html=True)
 
 def render_sidebar():
-    """Enhanced sidebar"""
+    """Enhanced sidebar with safe initialization"""
     st.sidebar.title("🚀 Hyperliquid Trading")
     st.sidebar.markdown("**Enhanced Live Dashboard**")
     
     st.sidebar.markdown("---")
     st.sidebar.subheader("🔗 API Status")
     
-    data_manager = DashboardData()
-    
-    if data_manager.api.connection_status:
-        st.sidebar.success("✅ Hyperliquid API")
-    else:
-        st.sidebar.error("❌ Hyperliquid API")
-    
-    for bot_id in ["ETH_VAULT", "ONDO_PERSONAL"]:
-        bot_config = data_manager.bot_configs[bot_id]
-        connection_test = data_manager.test_bot_connection(bot_id)
+    try:
+        data_manager = DashboardData()
         
-        if connection_test.get("status") == "success":
-            st.sidebar.success(f"✅ {bot_config.name}")
+        if data_manager.api and data_manager.api.connection_status:
+            st.sidebar.success("✅ Hyperliquid API")
         else:
-            st.sidebar.error(f"❌ {bot_config.name}")
+            st.sidebar.error("❌ Hyperliquid API")
+        
+        for bot_id in ["ETH_VAULT", "ONDO_PERSONAL"]:
+            try:
+                if bot_id in data_manager.bot_configs:
+                    bot_config = data_manager.bot_configs[bot_id]
+                    connection_test = data_manager.test_bot_connection(bot_id)
+                    
+                    if connection_test.get("status") == "success":
+                        st.sidebar.success(f"✅ {bot_config.name}")
+                    else:
+                        st.sidebar.error(f"❌ {bot_config.name}")
+                else:
+                    st.sidebar.error(f"❌ {bot_id} Config Missing")
+            except Exception as e:
+                st.sidebar.error(f"❌ {bot_id} Error")
+                
+    except Exception as e:
+        st.sidebar.error("❌ Dashboard Init Failed")
     
     st.sidebar.markdown("---")
     st.sidebar.subheader("🛠️ Environment")
@@ -381,7 +401,7 @@ def render_sidebar():
     
     return selected_bot, timeframe
 
-def render_bot_header(bot_config: BotConfig, performance: Dict, position_data: Dict):
+def render_bot_header(bot_config, performance, position_data):
     """Enhanced bot header with live data"""
     
     header_html = f'''
@@ -959,7 +979,7 @@ class HyperliquidAPI:
             print(f"Hyperliquid API connection failed: {e}")
             return False
     
-    def get_user_state(self, address: str) -> Dict:
+    def get_user_state(self, address: str):
         """Get current positions and balances"""
         try:
             if not address or len(address) != 42:
@@ -980,7 +1000,7 @@ class HyperliquidAPI:
             print(f"Balance API error: {e}")
             return 0.0
     
-    def get_current_position(self, address: str, asset: str) -> Dict:
+    def get_current_position(self, address: str, asset: str):
         """Get current position for asset"""
         try:
             user_state = self.get_user_state(address)
@@ -1018,7 +1038,7 @@ class HyperliquidAPI:
             print(f"Position API error: {e}")
             return {'size': 0, 'direction': 'flat', 'unrealized_pnl': 0, 'entry_price': 0, 'mark_price': 0}
     
-    def get_fills(self, address: str) -> List[Dict]:
+    def get_fills(self, address: str):
         """Get trade history"""
         try:
             if not address or len(address) != 42:
@@ -1035,7 +1055,7 @@ class RailwayAPI:
         self.eth_bot_url = f"https://{ETH_RAILWAY_URL}"
         self.ondo_bot_url = f"https://{ONDO_RAILWAY_URL}"
     
-    def test_bot_connection(self, bot_id: str) -> Dict:
+    def test_bot_connection(self, bot_id: str):
         """Test connection to Railway deployed bot"""
         try:
             url = self.eth_bot_url if bot_id == "ETH_VAULT" else self.ondo_bot_url
@@ -1060,7 +1080,7 @@ class RailwayAPI:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
-def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balance: float, performance: Dict) -> go.Figure:
+def create_interactive_equity_curve(bot_id: str, fills, start_balance: float, performance):
     """Create interactive equity curve chart with accurate start dates"""
     
     calculator = TradingMetricsCalculator()
@@ -1216,7 +1236,7 @@ def create_interactive_equity_curve(bot_id: str, fills: List[Dict], start_balanc
     
     return fig
 
-def create_performance_breakdown_chart(performance: Dict, bot_id: str) -> go.Figure:
+def create_performance_breakdown_chart(performance, bot_id: str):
     """Create weekly/monthly performance breakdown chart with accurate date ranges"""
     
     current_total = performance.get('total_pnl', 0)
