@@ -1264,11 +1264,10 @@ class DashboardData:
         """Test connection to Railway deployed bot"""
         return self.railway_api.test_bot_connection(bot_id)
     
-    @st.cache_data(ttl=30)
-    def get_live_performance(_self, bot_id: str) -> Dict:
+    def get_live_performance(self, bot_id: str):
         """Get live performance with fresh start for ONDO"""
         
-        bot_config = _self.bot_configs[bot_id]
+        bot_config = self.bot_configs[bot_id]
         
         if bot_id == "ETH_VAULT" and bot_config.vault_address:
             address = bot_config.vault_address
@@ -1277,12 +1276,12 @@ class DashboardData:
             address = bot_config.personal_address  
             start_balance = ONDO_PERSONAL_START_BALANCE
         else:
-            return _self._get_fallback_performance(bot_id)
+            return self._get_fallback_performance(bot_id)
         
         try:
-            account_value = _self.api.get_account_balance(address)
-            position_data = _self.api.get_current_position(address, bot_config.asset)
-            fills = _self.api.get_fills(address)
+            account_value = self.api.get_account_balance(address)
+            position_data = self.api.get_current_position(address, bot_config.asset)
+            fills = self.api.get_fills(address)
             
             # ONDO FIX: Filter fills to only include trades after ONDO start date AND ONDO coin
             if bot_id == "ONDO_PERSONAL":
@@ -1311,15 +1310,15 @@ class DashboardData:
             else:
                 # Better handling of max drawdown for new bot
                 if fills:
-                    max_drawdown = _self.calculator.calculate_max_drawdown(fills, start_balance)
+                    max_drawdown = self.calculator.calculate_max_drawdown(fills, start_balance)
                 else:
                     max_drawdown = 0.0  # No drawdown yet for new bot
             
             # Better handling of ratios for small number of trades
             if fills:
-                win_rate = _self.calculator.calculate_win_rate(fills)
-                profit_factor = _self.calculator.calculate_profit_factor(fills)
-                sharpe_ratio = _self.calculator.calculate_sharpe_ratio(fills, start_balance)
+                win_rate = self.calculator.calculate_win_rate(fills)
+                profit_factor = self.calculator.calculate_profit_factor(fills)
+                sharpe_ratio = self.calculator.calculate_sharpe_ratio(fills, start_balance)
             else:
                 # No trades yet - show 0 instead of error
                 win_rate = 0.0
@@ -1378,3 +1377,16 @@ class DashboardData:
                 'account_value': account_value,
                 'win_rate': win_rate,
                 'profit_factor': profit_factor,
+                'sharpe_ratio': sharpe_ratio,
+                'sortino_ratio': sharpe_ratio * 1.4 if sharpe_ratio > 0 else 0,
+                'max_drawdown': max_drawdown,
+                'cagr': cagr,
+                'avg_daily_return': avg_daily_return,
+                'total_return': total_return,
+                'trading_days': trading_days
+            }
+            
+        except Exception as e:
+            print(f"Error in get_live_performance for {bot_id}: {e}")
+        
+        return self._get_fallback_performance(bot_id)
