@@ -1187,11 +1187,7 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
         '''
         st.markdown(metric_html, unsafe_allow_html=True)
     
-    # Add Strategy Health & Edge Monitoring after the primary metrics
-    st.markdown("---")
-    render_strategy_health_dashboard(performance, selected_view)
-    
-    # Secondary metrics row - Risk-Adjusted Metrics (keep only once)
+    # Secondary metrics row
     st.markdown("### 📈 Risk-Adjusted Metrics")
     col1, col2, col3, col4 = st.columns(4)
     
@@ -1901,7 +1897,12 @@ def main():
         
         st.markdown("---")
         
-        # Enhanced Performance metrics with Strategy Health integrated
+        # Strategy Health & Edge Monitoring Dashboard
+        render_strategy_health_dashboard(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Enhanced Performance metrics with daily dollar amount
         render_enhanced_performance_metrics(performance, selected_view)
         
         st.markdown("---")
