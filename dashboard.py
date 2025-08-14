@@ -930,42 +930,38 @@ def render_bot_overview(data_manager: DashboardData):
             pnl_color = "performance-positive" if total_pnl >= 0 else "performance-negative"
             today_color = "performance-positive" if today_pnl >= 0 else "performance-negative"
             
-            card_html = f'''
-            <div class="metric-container">
-                <h3 style="color: #10b981; margin-bottom: 1rem;">
-                    {config.name} <span class="status-live">{config.status}</span>
-                </h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Total P&L</h4>
-                        <h2 class="{pnl_color}">${total_pnl:,.2f}</h2>
-                    </div>
-                    <div>
-                        <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Today P&L</h4>
-                        <h2 class="{today_color}">${today_pnl:,.2f}</h2>
-                    </div>
+            # Use proper Streamlit components instead of HTML
+            with st.container():
+                st.markdown(f"""
+                <div style="background: rgba(30, 41, 59, 0.8); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2); margin: 1rem 0;">
+                    <h3 style="color: #10b981; margin-bottom: 1rem; font-size: 1.5rem;">
+                        {config.name} <span style="color: #10b981; font-weight: bold;">●</span> {config.status}
+                    </h3>
                 </div>
+                """, unsafe_allow_html=True)
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <h5 style="color: #8b5cf6;">CAGR: {cagr:.1f}%</h5>
-                        <h5 style="color: #8b5cf6;">Asset: {config.asset}</h5>
-                    </div>
-                    <div>
-                        <h5 style="color: #8b5cf6;">Strategy: {config.strategy.split()[0]}</h5>
-                        <h5 style="color: #8b5cf6;">Timeframe: {config.timeframe}</h5>
-                    </div>
-                </div>
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Total P&L", f"${total_pnl:,.2f}", 
+                             delta=f"{((total_pnl/3000)*100):.1f}%" if bot_id == "ETH_VAULT" else f"{((total_pnl/175)*100):.1f}%")
+                with col2:
+                    st.metric("Today P&L", f"${today_pnl:,.2f}")
                 
-                <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); padding-top: 1rem;">
-                    <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">
-                        Railway: {railway_status} | Position: {position_data.get('direction', 'flat').upper()}
+                col3, col4 = st.columns(2)
+                with col3:
+                    st.metric("CAGR", f"{cagr:.1f}%")
+                    st.markdown(f"**Asset:** {config.asset}")
+                with col4:
+                    st.metric("Strategy", config.strategy.split()[0])
+                    st.markdown(f"**Timeframe:** {config.timeframe}")
+                
+                st.markdown(f"""
+                <div style="border-top: 1px solid rgba(139, 92, 246, 0.2); padding-top: 1rem; margin-top: 1rem;">
+                    <p style="color: #e2e8f0; margin: 0; font-size: 0.9rem;">
+                        <strong>Railway:</strong> {railway_status} | <strong>Position:</strong> {position_data.get('direction', 'flat').upper()}
                     </p>
                 </div>
-            </div>
-            '''
-            st.markdown(card_html, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
 
 def render_main_dashboard():
     """Main dashboard rendering function"""
