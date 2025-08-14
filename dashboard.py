@@ -993,7 +993,7 @@ def calculate_edge_decay_status(performance: Dict, bot_id: str) -> Dict:
     }
 
 def render_strategy_health_dashboard(performance: Dict, bot_id: str):
-    """Render strategy health score and edge decay monitoring"""
+    """Render optimized strategy health score and edge decay monitoring with 2-column layout"""
     
     st.markdown('<h3 class="gradient-header">🎯 Strategy Health & Edge Monitoring</h3>', unsafe_allow_html=True)
     
@@ -1001,121 +1001,185 @@ def render_strategy_health_dashboard(performance: Dict, bot_id: str):
     health_data = calculate_strategy_health_score(performance, bot_id)
     edge_data = calculate_edge_decay_status(performance, bot_id)
     
-    col1, col2, col3 = st.columns(3)
+    # 2-Column Layout: Health Score (60%) | Monitoring Stack (40%)
+    col1, col2 = st.columns([6, 4])
     
     with col1:
-        # Strategy Health Score
+        # Enhanced Strategy Health Score Panel
         score = health_data['total_score']
         status = health_data['status']
         color = health_data['color']
         emoji = health_data['emoji']
+        scores = health_data['component_scores']
+        weights = health_data['weights']
         
-        metric_html = f'''
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Strategy Health Score</h4>
-            <h1 style="color: {color}; margin: 0; font-size: 3.5rem; font-weight: 300;">
-                {score:.0f}
-            </h1>
-            <p style="color: {color}; font-size: 1.2rem; margin: 0.5rem 0;">
-                {emoji} {status}
-            </p>
-        </div>
+        # Large health score display with component breakdown
+        health_html = f'''
+        <div class="metric-container" style="padding: 2rem;">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; text-align: center;">Strategy Health Score</h4>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="color: {color}; margin: 0; font-size: 4rem; font-weight: 300; letter-spacing: -2px;">
+                    {score:.0f}
+                </h1>
+                <p style="color: {color}; font-size: 1.5rem; margin: 0.5rem 0; font-weight: bold;">
+                    {emoji} {status}
+                </p>
+                <p style="color: #8b5cf6; font-size: 1rem; margin: 0;">
+                    All Systems Operating at Peak Performance
+                </p>
+            </div>
+            
+            <div style="margin-top: 1.5rem;">
+                <h5 style="color: #00ffff; margin-bottom: 1rem;">Component Breakdown:</h5>
         '''
-        st.markdown(metric_html, unsafe_allow_html=True)
+        
+        # Component scores with progress bars
+        component_names = {
+            'returns': '📈 Returns (CAGR)',
+            'risk_adj': '⚖️ Risk-Adjusted (Sharpe)',
+            'drawdown': '🛡️ Drawdown Control',
+            'consistency': '🎯 Consistency (Win Rate)',
+            'efficiency': '⚡ Efficiency (Profit Factor)'
+        }
+        
+        for component, score_val in scores.items():
+            weight = weights[component]
+            name = component_names[component]
+            
+            # Color coding for score levels
+            if score_val >= 90:
+                bar_color = "#10b981"
+            elif score_val >= 70:
+                bar_color = "#8b5cf6"
+            elif score_val >= 50:
+                bar_color = "#f59e0b"
+            else:
+                bar_color = "#ef4444"
+            
+            health_html += f'''
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <span style="color: #f1f5f9; font-size: 0.9rem;">{name}</span>
+                        <span style="color: {bar_color}; font-weight: bold;">{score_val:.0f}/100</span>
+                    </div>
+                    <div style="background: rgba(30, 41, 59, 0.8); border-radius: 10px; height: 8px; overflow: hidden;">
+                        <div style="background: {bar_color}; height: 100%; width: {score_val}%; border-radius: 10px; transition: all 0.3s ease;"></div>
+                    </div>
+                    <div style="text-align: right; margin-top: 0.25rem;">
+                        <small style="color: #94a3b8;">Weight: {weight}% | Contribution: {score_val * weight / 100:.1f}</small>
+                    </div>
+                </div>
+            '''
+        
+        health_html += '</div></div>'
+        st.markdown(health_html, unsafe_allow_html=True)
     
     with col2:
-        # Edge Decay Status
+        # Monitoring Stack - Edge Decay + Alert System
+        
+        # Edge Decay Monitor
         edge_status = edge_data['status']
         edge_color = edge_data['color']
         edge_emoji = edge_data['emoji']
         edge_message = edge_data['message']
         
-        metric_html = f'''
-        <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Edge Decay Monitor</h4>
-            <h2 style="color: {edge_color}; margin: 0 0 0.5rem 0; font-size: 2rem;">
-                {edge_emoji} {edge_status}
-            </h2>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
-                {edge_message}
-            </p>
+        edge_html = f'''
+        <div class="metric-container" style="margin-bottom: 1rem;">
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; text-align: center;">Edge Decay Monitor</h4>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h2 style="color: {edge_color}; margin: 0; font-size: 2.5rem; font-weight: 300;">
+                    {edge_emoji}
+                </h2>
+                <h3 style="color: {edge_color}; margin: 0.5rem 0; font-size: 1.4rem;">
+                    {edge_status}
+                </h3>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+                    {edge_message}
+                </p>
+            </div>
+            
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border-left: 3px solid {edge_color};">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8; font-size: 0.8rem;">Performance Status</span>
+                    <span style="color: {edge_color}; font-weight: bold; font-size: 0.9rem;">{edge_status}</span>
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    <small style="color: #8b5cf6;">
+                        {'✅ No warning flags detected' if not edge_data.get('warning_flags') else '⚠️ ' + ', '.join(edge_data.get('warning_flags', []))}
+                    </small>
+                </div>
+            </div>
         </div>
         '''
-        st.markdown(metric_html, unsafe_allow_html=True)
-    
-    with col3:
-        # Alert Configuration
-        telegram_configured = False  # This would check if Telegram is set up
-        alert_color = "#10b981" if telegram_configured else "#94a3b8"
-        alert_status = "ACTIVE" if telegram_configured else "SETUP NEEDED"
+        st.markdown(edge_html, unsafe_allow_html=True)
         
-        metric_html = f'''
+        # Alert System Configuration
+        telegram_configured = False  # This would check if Telegram is set up
+        alert_color = "#10b981" if telegram_configured else "#f59e0b"
+        alert_status = "ACTIVE" if telegram_configured else "SETUP NEEDED"
+        alert_emoji = "✅" if telegram_configured else "📱"
+        
+        alert_html = f'''
         <div class="metric-container">
-            <h4 style="color: #94a3b8; margin-bottom: 1rem;">Alert System</h4>
-            <h2 style="color: {alert_color}; margin: 0 0 0.5rem 0; font-size: 1.5rem;">
-                📱 {alert_status}
-            </h2>
-            <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
-                Telegram notifications
-            </p>
+            <h4 style="color: #94a3b8; margin-bottom: 1rem; text-align: center;">Alert System</h4>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h2 style="color: {alert_color}; margin: 0; font-size: 2.5rem; font-weight: 300;">
+                    {alert_emoji}
+                </h2>
+                <h3 style="color: {alert_color}; margin: 0.5rem 0; font-size: 1.2rem;">
+                    {alert_status}
+                </h3>
+                <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">
+                    Telegram notifications
+                </p>
+            </div>
+            
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: 8px; border-left: 3px solid {alert_color};">
+                <div style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 0.5rem;">Ready to monitor:</div>
+                <div style="color: #8b5cf6; font-size: 0.8rem; line-height: 1.4;">
+                    • Edge decay warnings<br>
+                    • Performance milestones<br>
+                    • System health alerts<br>
+                    • Daily P&L summaries
+                </div>
+            </div>
         </div>
         '''
-        st.markdown(metric_html, unsafe_allow_html=True)
+        st.markdown(alert_html, unsafe_allow_html=True)
+        
+        # Quick Setup Button
+        if not telegram_configured:
+            if st.button("🚀 Setup Telegram Alerts", use_container_width=True, type="primary"):
+                st.info("💡 **Quick Setup Guide:**\n\n1. Message @BotFather on Telegram\n2. Create new bot and save token\n3. Get your chat ID\n4. Configure environment variables")
     
-    # Health Score Breakdown
-    if st.expander("📊 Health Score Breakdown", expanded=False):
+    # Success Message for Excellent Performance
+    if health_data['total_score'] >= 85:
+        st.success(f"🎯 **Outstanding Performance!** Your {bot_id.replace('_', ' ')} is operating at {health_data['total_score']:.0f}/100 efficiency with {edge_data['status'].lower()} edge decay status. Consider setting up alerts to monitor this excellent performance.")
+    
+    # Performance Insights
+    with st.expander("📊 Performance Insights & Recommendations", expanded=False):
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**Component Scores:**")
-            scores = health_data['component_scores']
-            weights = health_data['weights']
-            
-            for component, score in scores.items():
-                weight = weights[component]
-                weighted_score = score * weight / 100
-                
-                component_names = {
-                    'returns': 'Returns (CAGR)',
-                    'risk_adj': 'Risk-Adjusted (Sharpe)',
-                    'drawdown': 'Drawdown Control',
-                    'consistency': 'Consistency (Win Rate)',
-                    'efficiency': 'Efficiency (Profit Factor)'
-                }
-                
-                st.metric(
-                    component_names[component],
-                    f"{score:.0f}/100",
-                    f"Weight: {weight}% | Contribution: {weighted_score:.1f}"
-                )
+            st.markdown("**🎯 Strategy Strengths:**")
+            strong_components = [name for component, name in component_names.items() 
+                               if scores[component] >= 90]
+            if strong_components:
+                for strength in strong_components:
+                    st.markdown(f"✅ {strength}")
+            else:
+                st.markdown("• Building performance baseline")
         
         with col2:
-            if edge_data['warning_flags']:
-                st.markdown("**⚠️ Warning Flags:**")
-                for flag in edge_data['warning_flags']:
-                    st.markdown(f"• {flag}")
+            st.markdown("**🚀 Next Steps:**")
+            if health_data['total_score'] >= 85:
+                st.markdown("• Setup Telegram alerts for monitoring")
+                st.markdown("• Consider increasing position size")
+                st.markdown("• Monitor for edge decay patterns")
             else:
-                st.markdown("**✅ No Warning Flags**")
-                st.markdown("Strategy is performing within expected parameters")
-    
-    # Telegram Setup Guide
-    if not telegram_configured:
-        with st.expander("📱 Setup Telegram Alerts", expanded=False):
-            st.markdown("""
-            **Quick Telegram Setup:**
-            
-            1. **Create Bot:** Message @BotFather on Telegram
-            2. **Get Token:** Save the bot token securely
-            3. **Get Chat ID:** Message your bot, then visit: 
-               `https://api.telegram.org/bot<TOKEN>/getUpdates`
-            4. **Configure:** Add to your environment variables
-            
-            **Alert Types:**
-            - 🚨 Edge decay warnings
-            - 📈 Performance milestones  
-            - ⚠️ System health alerts
-            - 📊 Daily P&L summaries
-            """)
+                st.markdown("• Monitor performance trends")
+                st.markdown("• Review strategy parameters")
+                st.markdown("• Track edge decay indicators")
 
 def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
     """Enhanced performance metrics with daily dollar amount and additional stats"""
@@ -1138,6 +1202,50 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
             <h1 style="color: {cagr_color}; margin: 0; font-size: 3rem; font-weight: 300;">
                 {performance.get('cagr', 0):.1f}%
             </h1>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    # Secondary metrics row
+    st.markdown("### 📈 Risk-Adjusted Metrics")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Profit Factor ✅</h4>
+            <h2 style="color: #10b981; margin-bottom: 0.3rem;">{performance.get('profit_factor', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Trade P&L</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col2:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sharpe Ratio ✅</h4>
+            <h2 style="color: #8b5cf6; margin-bottom: 0.3rem;">{performance.get('sharpe_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Volatility</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col3:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Sortino Ratio ✅</h4>
+            <h2 style="color: #a855f7; margin-bottom: 0.3rem;">{performance.get('sortino_ratio', 0):.2f}</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">Downside Deviation</p>
+        </div>
+        '''
+        st.markdown(metric_html, unsafe_allow_html=True)
+    
+    with col4:
+        metric_html = f'''
+        <div class="metric-container">
+            <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Max Drawdown ✅</h4>
+            <h2 class="performance-negative" style="margin-bottom: 0.3rem;">{performance.get('max_drawdown', 0):.1f}%</h2>
+            <p style="color: #8b5cf6; font-size: 0.9em;">From Equity Curve</p>
         </div>
         '''
         st.markdown(metric_html, unsafe_allow_html=True)
@@ -1186,14 +1294,6 @@ def render_enhanced_performance_metrics(performance: Dict, bot_id: str):
         </div>
         '''
         st.markdown(metric_html, unsafe_allow_html=True)
-    
-    # Add Strategy Health & Edge Monitoring after the primary metrics
-    st.markdown("---")
-    render_strategy_health_dashboard(performance, selected_view)
-    
-    # Secondary metrics row - Risk-Adjusted Metrics (keep only once)
-    st.markdown("### 📈 Risk-Adjusted Metrics")
-    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         metric_html = f'''
@@ -1901,8 +2001,13 @@ def main():
         
         st.markdown("---")
         
-        # Enhanced Performance metrics with Strategy Health integrated
+        # Enhanced Performance metrics with daily dollar amount
         render_enhanced_performance_metrics(performance, selected_view)
+        
+        st.markdown("---")
+        
+        # Strategy Health & Edge Monitoring Dashboard  
+        render_strategy_health_dashboard(performance, selected_view)
         
         st.markdown("---")
         
