@@ -2,26 +2,35 @@ class DashboardData:
     """Centralized data management with real calculations"""
     
     def __init__(self):
+        # Initialize with fallback values first
+        self.api = None
+        self.railway_api = None
+        self.calculator = TradingMetricsCalculator()
+        self.bot_configs = {}
+        
+        # Try to initialize APIs
         try:
             self.api = HyperliquidAPI()
-            self.railway_api = RailwayAPI()
-            self.calculator = TradingMetricsCalculator()
-            self.bot_configs = self._initialize_bot_configs()
         except Exception as e:
-            print(f"Error initializing DashboardData: {e}")
-            # Fallback initialization
-            self.api = None
-            self.railway_api = None
-            self.calculator = TradingMetricsCalculator()
-            self.bot_configs = {}
+            print(f"Failed to initialize Hyperliquid API: {e}")
+            
+        try:
+            self.railway_api = RailwayAPI()
+        except Exception as e:
+            print(f"Failed to initialize Railway API: {e}")
+            
+        # Initialize bot configs last
+        self.bot_configs = self._initialize_bot_configs()
     
-    def _initialize_bot_configs(self) -> Dict[str, BotConfig]:
+    def _initialize_bot_configs(self):
         """Initialize production bot configurations"""
         try:
-            return {
+            api_status = self.api.connection_status if self.api else False
+            
+            configs = {
                 "ETH_VAULT": BotConfig(
                     name="ETH Vault Bot",
-                    status="LIVE" if hasattr(self, 'api') and self.api.connection_status else "OFFLINE",
+                    status="LIVE" if api_status else "OFFLINE",
                     allocation=0.75,
                     mode="Professional Vault Trading",
                     railway_url=ETH_RAILWAY_URL,
@@ -33,7 +42,7 @@ class DashboardData:
                 ),
                 "ONDO_PERSONAL": BotConfig(
                     name="ONDO Personal Bot", 
-                    status="LIVE" if hasattr(self, 'api') and self.api.connection_status else "OFFLINE",
+                    status="LIVE" if api_status else "OFFLINE",
                     allocation=1.0,
                     mode="Chart-Based Webhooks",
                     railway_url=ONDO_RAILWAY_URL,
@@ -44,6 +53,7 @@ class DashboardData:
                     api_endpoint="/webhook"
                 )
             }
+            return configs
         except Exception as e:
             print(f"Error initializing bot configs: {e}")
             return {}
@@ -923,6 +933,12 @@ class HyperliquidAPI:
     
     def __init__(self):
         try:
+            if not HYPERLIQUID_AVAILABLE:
+                print("Hyperliquid modules not available - running in fallback mode")
+                self.connection_status = False
+                self.info = None
+                return
+                
             self.is_testnet = HYPERLIQUID_TESTNET
             self.base_url = constants.TESTNET_API_URL if self.is_testnet else constants.MAINNET_API_URL
             self.info = Info(self.base_url, skip_ws=True)
