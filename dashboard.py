@@ -2,43 +2,61 @@ class DashboardData:
     """Centralized data management with real calculations"""
     
     def __init__(self):
-        self.api = HyperliquidAPI()
-        self.railway_api = RailwayAPI()
-        self.calculator = TradingMetricsCalculator()
-        self.bot_configs = self._initialize_bot_configs()
+        try:
+            self.api = HyperliquidAPI()
+            self.railway_api = RailwayAPI()
+            self.calculator = TradingMetricsCalculator()
+            self.bot_configs = self._initialize_bot_configs()
+        except Exception as e:
+            print(f"Error initializing DashboardData: {e}")
+            # Fallback initialization
+            self.api = None
+            self.railway_api = None
+            self.calculator = TradingMetricsCalculator()
+            self.bot_configs = {}
     
     def _initialize_bot_configs(self) -> Dict[str, BotConfig]:
         """Initialize production bot configurations"""
-        return {
-            "ETH_VAULT": BotConfig(
-                name="ETH Vault Bot",
-                status="LIVE" if self.api.connection_status else "OFFLINE",
-                allocation=0.75,
-                mode="Professional Vault Trading",
-                railway_url=ETH_RAILWAY_URL,
-                asset="ETH",
-                timeframe="30min",
-                strategy="Momentum/Trend Following + Temporal Optimization v3.4",
-                vault_address=ETH_VAULT_ADDRESS,
-                api_endpoint="/api/webhook"
-            ),
-            "ONDO_PERSONAL": BotConfig(
-                name="ONDO Personal Bot", 
-                status="LIVE" if self.api.connection_status else "OFFLINE",
-                allocation=1.0,
-                mode="Chart-Based Webhooks",
-                railway_url=ONDO_RAILWAY_URL,
-                asset="ONDO",
-                timeframe="39min",
-                strategy="Mean Reversion + Signal-Based Exits",
-                personal_address=PERSONAL_WALLET_ADDRESS,
-                api_endpoint="/webhook"
-            )
-        }
+        try:
+            return {
+                "ETH_VAULT": BotConfig(
+                    name="ETH Vault Bot",
+                    status="LIVE" if hasattr(self, 'api') and self.api.connection_status else "OFFLINE",
+                    allocation=0.75,
+                    mode="Professional Vault Trading",
+                    railway_url=ETH_RAILWAY_URL,
+                    asset="ETH",
+                    timeframe="30min",
+                    strategy="Momentum/Trend Following + Temporal Optimization v3.4",
+                    vault_address=ETH_VAULT_ADDRESS,
+                    api_endpoint="/api/webhook"
+                ),
+                "ONDO_PERSONAL": BotConfig(
+                    name="ONDO Personal Bot", 
+                    status="LIVE" if hasattr(self, 'api') and self.api.connection_status else "OFFLINE",
+                    allocation=1.0,
+                    mode="Chart-Based Webhooks",
+                    railway_url=ONDO_RAILWAY_URL,
+                    asset="ONDO",
+                    timeframe="39min",
+                    strategy="Mean Reversion + Signal-Based Exits",
+                    personal_address=PERSONAL_WALLET_ADDRESS,
+                    api_endpoint="/webhook"
+                )
+            }
+        except Exception as e:
+            print(f"Error initializing bot configs: {e}")
+            return {}
     
     def test_bot_connection(self, bot_id: str) -> Dict:
         """Test connection to Railway deployed bot"""
-        return self.railway_api.test_bot_connection(bot_id)
+        try:
+            if self.railway_api:
+                return self.railway_api.test_bot_connection(bot_id)
+            else:
+                return {"status": "error", "message": "Railway API not initialized"}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
     
     @st.cache_data(ttl=30)
     def get_live_performance(_self, bot_id: str) -> Dict:
@@ -904,14 +922,21 @@ class HyperliquidAPI:
     """Integration with Hyperliquid production setup"""
     
     def __init__(self):
-        self.is_testnet = HYPERLIQUID_TESTNET
-        self.base_url = constants.TESTNET_API_URL if self.is_testnet else constants.MAINNET_API_URL
-        self.info = Info(self.base_url, skip_ws=True)
-        self.connection_status = self._test_connection()
+        try:
+            self.is_testnet = HYPERLIQUID_TESTNET
+            self.base_url = constants.TESTNET_API_URL if self.is_testnet else constants.MAINNET_API_URL
+            self.info = Info(self.base_url, skip_ws=True)
+            self.connection_status = self._test_connection()
+        except Exception as e:
+            print(f"Failed to initialize Hyperliquid API: {e}")
+            self.connection_status = False
+            self.info = None
     
     def _test_connection(self) -> bool:
         """Test API connection"""
         try:
+            if self.info is None:
+                return False
             meta = self.info.meta()
             return meta is not None
         except Exception as e:
